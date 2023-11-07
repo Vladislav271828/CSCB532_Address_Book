@@ -1,6 +1,7 @@
 package CSCB532.Address_Book.user;
 
 
+import CSCB532.Address_Book.contact.Contact;
 import CSCB532.Address_Book.token.Token;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -37,6 +38,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
+
+    @OneToMany(mappedBy = "user")
+    private List<Contact> contacts;
 
 
     @Override
