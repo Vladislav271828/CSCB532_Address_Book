@@ -38,7 +38,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Contact> contacts;
 
@@ -64,10 +64,10 @@ public class User implements UserDetails {
         return true;
     }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+        @Override
+        public boolean isAccountNonLocked() {
+            return true;
+        }
 
     @Override
     public boolean isCredentialsNonExpired() {
