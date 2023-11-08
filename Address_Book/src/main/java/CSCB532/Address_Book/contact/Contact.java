@@ -2,9 +2,17 @@ package CSCB532.Address_Book.contact;
 
 import CSCB532.Address_Book.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "contact")
 public class Contact {
@@ -43,11 +51,28 @@ public class Contact {
     private String comment;
 
     @ManyToOne
-    @JoinColumn(name = "_user_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "contact")
     private List<CustomRow> customRows;
 
-
+    @Override
+    public String toString() {
+        return "Contact{" +
+                "id=" + id +
+                ", importance=" + importance +
+                ", name='" + name + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", nameOfCompany='" + nameOfCompany + '\'' +
+                ", address='" + address + '\'' +
+                ", email='" + email + '\'' +
+                ", fax='" + fax + '\'' +
+                ", mobileNumber='" + mobileNumber + '\'' +
+                ", comment='" + comment + '\'' +
+                //", user=" + user +
+                ", customRows=" + customRows +
+                '}';
+    }
 }
