@@ -1,42 +1,58 @@
+@keyframes fade-in-up {
+    0% {
+        opacity: 0;
+        transform: translateY(3%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0%);
+    }
+}
+
+::placeholder {
+    color: #646464;
+    font-weight: 400;
+  font-family: 'Montserrat', sans-serif;
+    opacity: 1; /* Firefox */
+  }
+
 .login-form-container{
     background-color: #ffffff;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     border-radius: 25px;
     width: 550px;
     overflow: hidden;
     max-width: 90vw;
     height: auto;
+    border: 2px solid #464646;
+    animation: fade-in-up 1s;
+    animation-timing-function: ease;
 }
 
-h1 {
-    margin: 35px 0px;
+.login-form-header {
+    margin: 30px 0px;
     font-size: 32px;
     font-weight: 700;
     color: #464646;
+    font-weight: 800;
 }
 
-.input{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: auto;
-    margin-top: 15px;
+input:hover,
+input:focus{
+    outline: 2px solid #464646;
+}
+
+input{
     width: 80%;
     height: 50px;
-    background-color: #eaeaea;
+    margin-bottom: 20px;
+    padding: 0px 5%;
     border-radius: 6px;
-}
-
-.input input{
-    height: 30px;
-    width: 90%;
-    background: transparent;
     border:none;
     outline: none;
     font-size: 16px;
     color: #464646;
+    background-color: #eaeaea;
 }
 
 a{
@@ -46,9 +62,13 @@ a{
 
 .switch-text{
     margin: auto;
-    padding: 20px 0px;
-    color: #797979;
+    padding-bottom: 20px;
+    color: #646464;
     width: 70%;
+}
+
+.switch-text a:hover{
+    color: #464646;
 }
 
 .submit-btn {
@@ -62,4 +82,9 @@ a{
     font-size: 1.1rem;
     padding: 1.3rem;
     margin: 0;
+    font-family: 'Montserrat','Open Sans', sans-serif;
+}
+
+.submit-btn:hover {
+    background-color: #646464;
 }
