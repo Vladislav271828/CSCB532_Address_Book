@@ -5,6 +5,11 @@ import CSCB532.Address_Book.user.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 //@RequiredArgsConstructor
 public class ContactService {
@@ -16,40 +21,71 @@ public class ContactService {
         this.authenticationService = authenticationService;
     }
 
-    public DtoContact createContact(DtoContact dtoContact)  {
-        if (dtoContact.toString().isEmpty()) return null;
+    public DtoContact createContact(DtoContact dtoContact) {
+        Optional<DtoContact> optionalDtoContact = Optional.ofNullable(dtoContact);
+
+        if (optionalDtoContact.isPresent()) {
+            User user = authenticationService.getCurrentlyLoggedUser();
+            ModelMapper modelMapper = new ModelMapper();
+
+            Contact contact = modelMapper.map(dtoContact, Contact.class);
+            contact.setUser(user);
+
+            contactRepository.save(contact);
+            Optional<Contact> optionalContact = contactRepository.findTopByUserIdOrderByContactIdDesc(user.getId());
+
+            if (optionalContact.isPresent()) {
+                return modelMapper.map(optionalContact.get(), DtoContact.class);
+            }
+        }
+        return null; // or handle as needed if contact creation fails
+    }
+
+    public DtoContact updateContact(Integer contactId, DtoContact dtoContact) {
+        Optional<Contact> optionalContact = contactRepository.findById(contactId);
+
+        if (optionalContact.isPresent()) {
+            Contact contact = optionalContact.get();
+
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.getConfiguration().setSkipNullEnabled(true);
+
+            // Map the updates from DtoContactUpdates to Contact
+            modelMapper.map(dtoContact, contact);
+
+            contactRepository.save(contact);
+
+            return modelMapper.map(contact, DtoContact.class);
+        } else {
+            return null; // Or handle as needed if contact is not found
+        }
+    }
+
+    public List<DtoContact> getAllContactsForLoggedInUser() {
         User user = authenticationService.getCurrentlyLoggedUser();
+        List<Contact> userContacts = contactRepository.findAllByUserId(user.getId());
 
-        ModelMapper modelMapper = new ModelMapper();
-        Contact contact = modelMapper.map(dtoContact, Contact.class);
-        contact.setUser(user);
-//        contact.setImportance(dtoContact.getImportance());
-//        contact.setName(dtoContact.getName());
-//        contact.setLastName(dtoContact.getLastName());
-//        contact.setPhoneNumber(dtoContact.getPhoneNumber());
-//        contact.setNameOfCompany(dtoContact.getNameOfCompany());
-//        contact.setAddress(dtoContact.getAddress());
-//        contact.setEmail(dtoContact.getEmail());
-//        contact.setFax(dtoContact.getFax());
-//        contact.setMobileNumber(dtoContact.g  etMobileNumber());
-//        contact.setComment(dtoContact.getComment());
-        contactRepository.save(contact);
-        contact = contactRepository.findTopByUserIdOrderByContactIdDesc(user.getId()).get();
+        if (userContacts != null && !userContacts.isEmpty()) {
+            ModelMapper modelMapper = new ModelMapper();
+            return userContacts.stream()
+                    .map(contact -> modelMapper.map(contact, DtoContact.class))
+                    .collect(Collectors.toList());
+        } else {
+            return null; // Or handle as needed if no contacts found
+        }
+    }
 
-        dtoContact = modelMapper.map(contact, DtoContact.class);
-//        dtoContact.setImportance(contact.getImportance());
-//        dtoContact.setAddress(contact.getAddress());
-//        dtoContact.setName(contact.getName());
-//        dtoContact.setLastName(contact.getLastName());
-//        dtoContact.setPhoneNumber(contact.getPhoneNumber());
-//        dtoContact.setNameOfCompany(contact.getNameOfCompany());
-//        dtoContact.setAddress(contact.getAddress());
-//        dtoContact.setEmail(contact.getEmail());
-//        dtoContact.setFax(contact.getFax());
-//        dtoContact.setMobileNumber(contact.getMobileNumber());
-//        dtoContact.setComment(contact.getComment());
+    public String deleteContactById(Integer contactId) {
+        Optional<Contact> contact = contactRepository.findById(contactId);
 
-        return dtoContact;
+        if (contact.isPresent()) {
+            String name = contact.get().getName();
+            String lastName = contact.get().getLastName();
 
+            contactRepository.delete(contact.get());
+            return "Contact " + name + " " + lastName + " deleted successfully";
+        } else {
+            return null; // Or handle as needed if contact is not found
+        }
     }
 }

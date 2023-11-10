@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DtoContact {
 
+    private Integer id;
     private int importance;
     private String name;
     private String lastName;

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Address_Book/Address_Book.iml" filepath="$PROJECT_DIR$/Address_Book/Address_Book.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/CSCB532_Traykov_Address_Book2.iml" filepath="$PROJECT_DIR$/.idea/CSCB532_Traykov_Address_Book2.iml" />
+    </modules>
+  </component>
+</project>
