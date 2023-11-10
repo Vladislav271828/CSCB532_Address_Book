@@ -1,7 +1,6 @@
 package CSCB532.Address_Book.contact;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
-import CSCB532.Address_Book.exception.ApiException;
 import CSCB532.Address_Book.user.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,7 @@ public class ContactService {
         this.authenticationService = authenticationService;
     }
 
-    public DtoContact createContact(DtoContact dtoContact) throws ApiException {
+    public DtoContact createContact(DtoContact dtoContact)  {
         if (dtoContact.toString().isEmpty()) return null;
         User user = authenticationService.getCurrentlyLoggedUser();
 
