@@ -1,6 +1,5 @@
 package CSCB532.Address_Book.contact;
 
-import CSCB532.Address_Book.exception.ApiException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +17,7 @@ public class ContactController {
     }
     @PostMapping("/create-contact")
     public ResponseEntity<DtoContact> createContact(
-            @RequestBody DtoContact dtoContact) throws ApiException {
+            @RequestBody DtoContact dtoContact){
         return ResponseEntity.ok(contactService.createContact(dtoContact));
     }
 
