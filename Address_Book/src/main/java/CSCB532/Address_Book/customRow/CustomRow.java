@@ -1,8 +1,17 @@
-package CSCB532.Address_Book.contact;
+package CSCB532.Address_Book.customRow;
 
+import CSCB532.Address_Book.contact.Contact;
 import CSCB532.Address_Book.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "custom_row")
 public class CustomRow {
