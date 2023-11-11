@@ -1,6 +1,8 @@
 package CSCB532.Address_Book.auth;
 
 
+import CSCB532.Address_Book.auth.emailVerification.Verification;
+import CSCB532.Address_Book.auth.emailVerification.VerificationRepository;
 import CSCB532.Address_Book.config.JwtService;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.token.Token;
@@ -17,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static CSCB532.Address_Book.util.DtoValidationUtil.checkUserDto;
 import static CSCB532.Address_Book.util.DtoValidationUtil.errorMessage;
 
@@ -30,9 +34,10 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final VerificationRepository verificationRepository;
 
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {//TODO switch back to return AuthenticationResponse instead of void
 
         //Check if incoming data is valid
         if (checkUserDto(request)){//checks if fields are invalid
@@ -52,18 +57,20 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
+                .verified(false)//sets the initial status of the user as not verified basically
                 .build();
 
 
         var savedUser = repository.save(user); //save user in the db
-        var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
-
-        saveUserToken(savedUser, jwtToken);//save the token
-
-        return AuthenticationResponse.builder()
-                .token(jwtToken)//we return a jwt token that can be used by the client to authenticate other requests
-                .build()
-                ;
+        //TODO uncomment this after merge
+//        var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
+//
+//        saveUserToken(savedUser, jwtToken);//save the token
+//
+//        return AuthenticationResponse.builder()
+//                .token(jwtToken)//we return a jwt token that can be used by the client to authenticate other requests
+//                .build()
+//                ;
     }
 
 
@@ -73,7 +80,15 @@ public class AuthenticationService {
             throw new BadRequestException("Invalid Request: ".concat(errorMessage(request)));//the errorMessage method will get the names of the invalid fields. I.e. email, password. And their values - though for the moment the values are going to be empty strings
         }
 
+        var user = repository.findByEmail(request.getEmail())
+                .orElseThrow();//we do this and need it to there after revoke all previous jwt tokens
 
+
+        boolean verified = userRepository.isUserVerified(user.getId());//TODO comment this out after merge
+
+        if (!verified){
+            throw new BadRequestException("User is not verified. A verification email has been sent to " + user.getEmail() + ".");//TODO comment this out after merge
+        }
         authenticationManager.authenticate(//authenticates the user
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -82,8 +97,6 @@ public class AuthenticationService {
         );
 
 
-        var user = repository.findByEmail(request.getEmail())
-                .orElseThrow();//we do this and need it to there after revoke all previous jwt tokens
 
         revokeAllUserTokens(user);//ensures jwt tokens are set to false before creating a new one to avoid addition of more than one valid jwt tokens
 
@@ -132,4 +145,23 @@ public class AuthenticationService {
                 .orElseThrow();
     }
 
+    public boolean verifyUser(String code) {
+        Optional<Verification> verificationOpt = verificationRepository.findByVerificationCode(code);
+
+        if (verificationOpt.isPresent()) {
+            Verification verification = verificationOpt.get();
+
+            if (!verification.isExpired()) {
+                User user = verification.getUser();
+                user.setVerified(true);
+                userRepository.save(user);
+
+                verification.setExpired(true);
+                verificationRepository.save(verification);
+
+                return true;
+            }
+        }
+        return false;
+    }
 }

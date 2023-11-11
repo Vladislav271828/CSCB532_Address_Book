@@ -4,6 +4,10 @@ spring:
     username: root #if you haven't configured username and password for your database leave empty
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    sendgrid:
+      api-key: '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' #for production this should be stored in env variables
+
 
   jpa:
     hibernate:
@@ -15,4 +19,3 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL57Dialect
 
-    #This is a .yml file though we can refactor it to .properties and copy and paste the corresponding dialect for that extension
