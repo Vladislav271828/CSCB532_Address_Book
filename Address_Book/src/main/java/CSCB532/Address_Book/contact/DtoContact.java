@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class DtoContact {
 
     private Integer id;
-    private int importance;
+    private Integer importance;
     private String name;
     private String lastName;
     private String phoneNumber;

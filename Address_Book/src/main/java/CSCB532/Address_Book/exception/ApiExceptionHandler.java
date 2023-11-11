@@ -20,6 +20,19 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler
+    //specific handle for BadRequestException
+    //add more custom exceptions and catch them via the @ExceptionHandler to return a specific response. In this case a POJO for user related exceptions
+    public ResponseEntity<ErrorResponse> handleException(MissingContactException exc){
+
+        ErrorResponse error = new ErrorResponse();
+        error.setMessage(exc.getMessage());
+        error.setStatus(HttpStatus.NOT_FOUND.value());
+        error.setTimeStamp(System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+
 
     @ExceptionHandler
     //This catches all non specified exceptions and returns a response body of our choice
