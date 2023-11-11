@@ -21,7 +21,7 @@ public class Contact {
     private Integer id;
 
     @Column(name = "imporance")
-    private int importance;
+    private Integer importance;
 
     @Column(name = "name")
     private String name;
