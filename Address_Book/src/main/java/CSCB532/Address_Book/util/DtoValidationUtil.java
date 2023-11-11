@@ -1,6 +1,7 @@
 package CSCB532.Address_Book.util;
 
 import CSCB532.Address_Book.exception.BadRequestException;
+import CSCB532.Address_Book.exception.FieldNotFoundException;
 
 import java.lang.reflect.Field;
 
@@ -25,7 +26,11 @@ public class DtoValidationUtil {
             field.setAccessible(true);
 
             try {
-                isValid = field.get(obj).toString().isEmpty();
+                if (field.get(obj) != null) {
+                    isValid = field.get(obj).getClass().toString().isEmpty();
+                }else{
+                    throw new BadRequestException("Invalid data for "+obj.getClass().getSimpleName());
+                }
             } catch (IllegalAccessException e) {
                 throw new BadRequestException(e.getMessage());
             }
@@ -68,6 +73,45 @@ public class DtoValidationUtil {
         return errorMessage.toString();
     }
 
+    public static boolean areAllFieldsNull(Object object) {
+        if (object == null) {
+            return true;
+        }
 
+        for (Field field : object.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            try {
+                Object value = field.get(object);
+                if (value != null && !isPrimitiveAndUnset(field, value)) {
+                    return false;
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Unable to access fields of object", e);
+            }
+        }
+        return true;
+    }
+    private static boolean isPrimitiveAndUnset(Field field, Object value) {
+        Class<?> type = field.getType();
+        if (type.isPrimitive()) {
+            if (type == int.class) {
+                return (Integer) value == 0;
+            }
+            if (type == double.class) {
+                return (Double) value == 0.0;
+            }
+            if (type == float.class) {
+                return (Float) value == 0.0f;
+            }
+            if (type == long.class) {
+                return (Long) value == 0L;
+            }
+            if (type == boolean.class) {
+                return !((Boolean) value);
+            }
+            // Add other primitives as needed
+        }
+        return false;
+    }
 
 }
