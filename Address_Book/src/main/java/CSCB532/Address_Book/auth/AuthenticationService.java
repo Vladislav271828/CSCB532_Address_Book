@@ -37,7 +37,7 @@ public class AuthenticationService {
     private final VerificationRepository verificationRepository;
 
 
-    public void register(RegisterRequest request) {//TODO switch back to return AuthenticationResponse instead of void
+    public AuthenticationResponse register(RegisterRequest request) {//TODO switch back to return AuthenticationResponse instead of void
 
         //Check if incoming data is valid
         if (checkUserDto(request)){//checks if fields are invalid
@@ -63,14 +63,14 @@ public class AuthenticationService {
 
         var savedUser = repository.save(user); //save user in the db
         //TODO uncomment this after merge
-//        var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
-//
-//        saveUserToken(savedUser, jwtToken);//save the token
-//
-//        return AuthenticationResponse.builder()
-//                .token(jwtToken)//we return a jwt token that can be used by the client to authenticate other requests
-//                .build()
-//                ;
+        var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
+
+        saveUserToken(savedUser, jwtToken);//save the token
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)//we return a jwt token that can be used by the client to authenticate other requests
+                .build()
+                ;
     }
 
 
@@ -84,11 +84,11 @@ public class AuthenticationService {
                 .orElseThrow();//we do this and need it to there after revoke all previous jwt tokens
 
 
-        boolean verified = userRepository.isUserVerified(user.getId());//TODO comment this out after merge
+//        boolean verified = userRepository.isUserVerified(user.getId());//TODO comment this out after merge
 
-        if (!verified){
-            throw new BadRequestException("User is not verified. A verification email has been sent to " + user.getEmail() + ".");//TODO comment this out after merge
-        }
+//        if (!verified){
+//            throw new BadRequestException("User is not verified. A verification email has been sent to " + user.getEmail() + ".");//TODO comment this out after merge
+//        }
         authenticationManager.authenticate(//authenticates the user
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
