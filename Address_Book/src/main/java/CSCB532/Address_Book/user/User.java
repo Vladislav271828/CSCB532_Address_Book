@@ -42,6 +42,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Contact> contacts;
 
+    private boolean verified;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
