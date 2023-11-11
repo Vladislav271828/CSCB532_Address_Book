@@ -1,7 +1,7 @@
 package CSCB532.Address_Book.util;
 
+import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.exception.BadRequestException;
-import CSCB532.Address_Book.exception.FieldNotFoundException;
 
 import java.lang.reflect.Field;
 
@@ -28,19 +28,19 @@ public class DtoValidationUtil {
             try {
                 if (field.get(obj) != null) {
                     isValid = field.get(obj).getClass().toString().isEmpty();
-                }else{
-                    throw new BadRequestException("Invalid data for "+obj.getClass().getSimpleName());
+                } else {
+                    throw new BadRequestException("Invalid data for " + obj.getClass().getSimpleName());
                 }
             } catch (IllegalAccessException e) {
                 throw new BadRequestException(e.getMessage());
             }
 
         }
-    return isValid;
+        return isValid;
     }
 
 
-    public static String errorMessage(Object obj){
+    public static String errorMessage(Object obj) {
         // Ensure the object is not null
         if (obj == null) {
             System.out.println("Object is null");
@@ -60,7 +60,7 @@ public class DtoValidationUtil {
             field.setAccessible(true);
 
             try {
-                if (field.get(obj).toString().isEmpty()){
+                if (field.get(obj).toString().isEmpty()) {
                     errorMessage.append(field.getName()).append(" ").append(field.get(obj).toString());
                 }
 
@@ -91,6 +91,7 @@ public class DtoValidationUtil {
         }
         return true;
     }
+
     private static boolean isPrimitiveAndUnset(Field field, Object value) {
         Class<?> type = field.getType();
         if (type.isPrimitive()) {
@@ -112,6 +113,21 @@ public class DtoValidationUtil {
             // Add other primitives as needed
         }
         return false;
+    }
+
+    public static boolean areAllContactDtoFieldsNull(DtoContact dtoContact) {
+        return (
+                dtoContact.getImportance() == null &&
+                        dtoContact.getPhoneNumber() == null &&
+                        dtoContact.getName() == null &&
+                        dtoContact.getComment() == null &&
+                        dtoContact.getAddress() == null &&
+                        dtoContact.getFax() == null &&
+                        dtoContact.getEmail() == null &&
+                        dtoContact.getNameOfCompany() == null &&
+                        dtoContact.getLastName() == null &&
+                        dtoContact.getId() == null
+        );
     }
 
 }

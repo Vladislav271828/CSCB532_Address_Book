@@ -7,16 +7,13 @@ import CSCB532.Address_Book.exception.MissingContactException;
 import CSCB532.Address_Book.user.User;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static CSCB532.Address_Book.util.DtoValidationUtil.areAllFieldsNull;
+import static CSCB532.Address_Book.util.DtoValidationUtil.areAllContactDtoFieldsNull;
 
 @Service
 //@RequiredArgsConstructor
@@ -71,10 +68,10 @@ public class ContactService {
     /**
      * Updates an existing contact with new data from a DTO.
      *
-     * @param contactId the ID of the contact to update
+     * @param contactId  the ID of the contact to update
      * @param dtoContact the DTO containing updated contact information
      * @return the updated contact as a DTO
-     * @throws BadRequestException if the provided data is invalid
+     * @throws BadRequestException     if the provided data is invalid
      * @throws MissingContactException if no contact is found with the given ID
      */
     @Transactional
@@ -84,7 +81,7 @@ public class ContactService {
             throw new BadRequestException("Contact ID or update information cannot be null.");
         }
 
-        if (areAllFieldsNull(dtoContact)){
+        if (areAllContactDtoFieldsNull(dtoContact)) {
             throw new BadRequestException("Missing input.");
         }
 
@@ -140,9 +137,9 @@ public class ContactService {
      *
      * @param contactId The ID of the contact to be deleted.
      * @return A {@link String} message indicating successful deletion.
-     * @throws BadRequestException if the {@code contactId} is {@code null} or negative.
+     * @throws BadRequestException     if the {@code contactId} is {@code null} or negative.
      * @throws MissingContactException if no contact with the specified ID is found.
-     * @throws DatabaseException if there is an issue with the database operation.
+     * @throws DatabaseException       if there is an issue with the database operation.
      */
     public String deleteContactById(Integer contactId) {
         // Validate input
