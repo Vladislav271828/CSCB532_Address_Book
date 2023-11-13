@@ -1,5 +1,9 @@
 package CSCB532.Address_Book.exception;
 
+import jakarta.persistence.QueryTimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -13,66 +17,70 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class ApiExceptionHandler {
 
-    @ExceptionHandler
-    //specific handle for BadRequestException
-    //add more custom exceptions and catch them via the @ExceptionHandler to return a specific response. In this case a POJO for user related exceptions
-    public ResponseEntity<ErrorResponse> handleException(BadRequestException exc){
+    private static final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
+    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exc, HttpStatus status) {
         ErrorResponse error = new ErrorResponse();
         error.setMessage(exc.getMessage());
-        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setStatus(status.value());
         error.setTimeStamp(System.currentTimeMillis());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, status);
     }
 
-    @ExceptionHandler
-    //specific handle for BadRequestException
-    //add more custom exceptions and catch them via the @ExceptionHandler to return a specific response. In this case a POJO for user related exceptions
-    public ResponseEntity<ErrorResponse> handleException(MissingContactException exc){
-
-        ErrorResponse error = new ErrorResponse();
-        error.setMessage(exc.getMessage());
-        error.setStatus(HttpStatus.NOT_FOUND.value());
-        error.setTimeStamp(System.currentTimeMillis());
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException exc){
+        logger.error("BadRequestException occurred: {}", exc.getMessage());
+        return buildErrorResponse(exc, HttpStatus.BAD_REQUEST);
     }
 
-
-
-    @ExceptionHandler
-    //This catches all non specified exceptions and returns a response body of our choice
-    public ResponseEntity<ErrorResponse> handleException(Exception exc){
-
-        ErrorResponse error = new ErrorResponse();
-        error.setMessage(exc.getMessage());
-        error.setStatus(HttpStatus.BAD_REQUEST.value());
-        error.setTimeStamp(System.currentTimeMillis());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(ContactNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleContactNotFoundException(ContactNotFoundException exc){
+        logger.error("ContactNotFoundException occurred: {}", exc.getMessage());
+        return buildErrorResponse(exc, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(CustomRowNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCustomRowNotFoundException(CustomRowNotFoundException exc){
+        logger.error("CustomRowNotFoundException occurred: {}", exc.getMessage());
+        return buildErrorResponse(exc, HttpStatus.NOT_FOUND);
+    }
 
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException exc) {
-
-        // Extract the field errors from the BindingResult
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException exc) {
         List<FieldError> fieldErrors = exc.getBindingResult().getFieldErrors();
-
-        // Build a string with all error messages separated by a period and space
         String errorMessage = fieldErrors.stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(". "));
 
-        // If you want to include a period at the end of the final message
         if (!errorMessage.endsWith(".")) {
             errorMessage += ".";
         }
 
-        ErrorResponse error = new ErrorResponse();
-        error.setMessage(errorMessage); // Set the formatted error message
-        error.setStatus(HttpStatus.BAD_REQUEST.value());
-        error.setTimeStamp(System.currentTimeMillis());
-
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        logger.error("MethodArgumentNotValidException occurred: {}", errorMessage);
+        return buildErrorResponse(new Exception(errorMessage), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        logger.error("DataIntegrityViolationException occurred: {}", ex.getMessage());
+        return buildErrorResponse(new Exception("A data integrity issue occurred. Please make sure your input is valid."), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(QueryTimeoutException.class)
+    public ResponseEntity<ErrorResponse> handleQueryTimeoutException(QueryTimeoutException ex) {
+        logger.error("QueryTimeoutException occurred: {}", ex.getMessage());
+        return buildErrorResponse(new Exception("The request timed out. Please try again later."), HttpStatus.REQUEST_TIMEOUT);
+    }
+
+    @ExceptionHandler(DatabaseException.class)
+    public ResponseEntity<ErrorResponse> handleDatabaseException(DatabaseException ex) {
+        logger.error("DatabaseException occurred: {}", ex.getMessage());
+        return buildErrorResponse(new Exception("An unexpected database error occurred. Please contact support if the problem persists."), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception exc){
+        logger.error("General Exception occurred: {}", exc.getMessage());
+        return buildErrorResponse(exc, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

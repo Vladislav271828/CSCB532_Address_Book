@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DtoCustomRow {
-    private Integer id;
+    private Integer contactId;
     private String customName;
     private String customField;
 

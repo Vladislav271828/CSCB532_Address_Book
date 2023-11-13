@@ -14,11 +14,10 @@ public class CustomRowController {
     }
 
 
-    @PostMapping("/{contactId}/create-custom-row")
+    @PostMapping("/create-custom-row")
     public ResponseEntity<DtoCustomRow> createCustomRow(
-            @PathVariable Integer contactId,
             @RequestBody DtoCustomRow dtoCustomRow) {
-        return ResponseEntity.ok(customRowService.createCustomRow(contactId, dtoCustomRow));
+        return ResponseEntity.ok(customRowService.createCustomRow(dtoCustomRow));
     }
 
     @PatchMapping("/update-custom-row/{rowId}")
@@ -37,9 +36,17 @@ public class CustomRowController {
         return ResponseEntity.ok(customRowService.getCustomRowsByContactId(contactId));
     }
 
-    @DeleteMapping("/delete-custom-row/{rowId}")
-    public ResponseEntity<DtoCustomRow> deleteCustomRow(
+    @DeleteMapping("/delete-custom-row-by-contact-id/{contactId}")
+    public ResponseEntity<Void> deleteCustomRowsByContactId(
+            @PathVariable Integer contactId) {
+        customRowService.deleteCustomRowsByContactId(contactId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/delete-custom-row-by-id/{rowId}")
+    public ResponseEntity<Void> deleteCustomRow(
             @PathVariable Integer rowId) {
-        return ResponseEntity.ok(customRowService.deleteCustomRowById(rowId));
+        customRowService.deleteCustomRowById(rowId);
+        return ResponseEntity.noContent().build();
     }
 }

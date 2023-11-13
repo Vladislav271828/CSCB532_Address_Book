@@ -1,5 +1,6 @@
 package CSCB532.Address_Book.contact;
 
+import CSCB532.Address_Book.customRow.CustomRow;
 import CSCB532.Address_Book.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -54,7 +55,7 @@ public class Contact {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "contact")
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomRow> customRows;
 
     @Override

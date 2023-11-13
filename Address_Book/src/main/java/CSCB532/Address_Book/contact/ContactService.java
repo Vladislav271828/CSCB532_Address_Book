@@ -3,14 +3,16 @@ package CSCB532.Address_Book.contact;
 import CSCB532.Address_Book.auth.AuthenticationService;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.exception.DatabaseException;
-import CSCB532.Address_Book.exception.MissingContactException;
+import CSCB532.Address_Book.exception.ContactNotFoundException;
 import CSCB532.Address_Book.user.User;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static CSCB532.Address_Book.util.DtoValidationUtil.areAllContactDtoFieldsNull;
@@ -53,14 +55,14 @@ public class ContactService {
         // Save the contact
         try {
             contact = contactRepository.save(contact);
-        } catch (Exception exc) {
+        } catch (DataAccessException exc) {
             throw new DatabaseException("Database connectivity issue: " + exc.getMessage(), exc);
         }
 
         // Map entity back to DTO and return
         try {
             return modelMapper.map(contact, DtoContact.class);
-        } catch (Exception exc) {
+        } catch (DataAccessException exc) {
             throw new DatabaseException("Issue with mapping the contact data: " + exc.getMessage(), exc);
         }
     }
@@ -72,7 +74,7 @@ public class ContactService {
      * @param dtoContact the DTO containing updated contact information
      * @return the updated contact as a DTO
      * @throws BadRequestException     if the provided data is invalid
-     * @throws MissingContactException if no contact is found with the given ID
+     * @throws ContactNotFoundException if no contact is found with the given ID
      */
     @Transactional
     public DtoContact updateContact(Integer contactId, DtoContact dtoContact) {
@@ -85,9 +87,13 @@ public class ContactService {
             throw new BadRequestException("Missing input.");
         }
 
+        //checks if the currently logged user is attempting to update a contact that's not theirs
+        validateUserPermission(contactId);
+
+
         // Find the existing contact
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new MissingContactException("Contact with ID " + contactId + " not found."));
+                .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setSkipNullEnabled(true);
@@ -101,7 +107,7 @@ public class ContactService {
         // Map entity back to DTO and return
         try {
             return modelMapper.map(contact, DtoContact.class);
-        } catch (Exception exc) {
+        } catch (DataAccessException exc) {
             throw new DatabaseException("Issue with mapping the contact data: " + exc.getMessage(), exc);
         }
     }
@@ -132,13 +138,13 @@ public class ContactService {
      * <p>
      * This method attempts to delete a contact with the specified ID from the database.
      * If the contact ID is invalid (null or negative), a {@link BadRequestException} is thrown.
-     * If no contact with the specified ID is found, a {@link MissingContactException} is thrown.
+     * If no contact with the specified ID is found, a {@link ContactNotFoundException} is thrown.
      * If the contact is found and successfully deleted, a success message is returned.
      *
      * @param contactId The ID of the contact to be deleted.
      * @return A {@link String} message indicating successful deletion.
      * @throws BadRequestException     if the {@code contactId} is {@code null} or negative.
-     * @throws MissingContactException if no contact with the specified ID is found.
+     * @throws ContactNotFoundException if no contact with the specified ID is found.
      * @throws DatabaseException       if there is an issue with the database operation.
      */
     public String deleteContactById(Integer contactId) {
@@ -148,14 +154,26 @@ public class ContactService {
         }
 
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new MissingContactException("No contact with id " + contactId + " found."));
+                .orElseThrow(() -> new ContactNotFoundException("No contact with id " + contactId + " found."));
+
+        //checks if the currently logged user is attempting to update a contact that's not theirs
+        validateUserPermission(contactId);
 
         try {
             contactRepository.delete(contact);
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             throw new DatabaseException("Couldn't delete contact with id " + contactId, e.getCause());
         }
 
         return "Contact with id " + contact.getId() + " deleted successfully";
+    }
+
+    private void validateUserPermission(Integer contactId) {
+        Contact contact = contactRepository.findById(contactId)
+                .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
+        User currentUser = authenticationService.getCurrentlyLoggedUser();
+        if (!Objects.equals(currentUser.getId(), contact.getUser().getId())) {
+            throw new BadRequestException("User doesn't have permissions to perform this action.");
+        }
     }
 }
