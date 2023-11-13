@@ -19,4 +19,14 @@ public interface ContactRepository extends JpaRepository<Contact, Integer>{
     @Query("SELECT c FROM Contact c WHERE c.id = (SELECT MAX(cc.id) FROM Contact cc WHERE cc.user.id = :userId )")
     Optional<Contact> findTopByUserIdOrderByContactIdDesc(@Param("userId") Integer userId);
 
+    @Query("SELECT c FROM Contact c " +
+            "WHERE c.user.id = :userId " +
+            "AND (:name IS NULL OR c.name = :name) " +
+            "AND (:lastName IS NULL OR c.lastName = :lastName)")
+    List<Contact> findAllByUserIdAndNameAndOrLastName(
+            @Param("userId") Integer userId,
+            @Param("name") String name,
+            @Param("lastName") String lastName
+    );
+
 }

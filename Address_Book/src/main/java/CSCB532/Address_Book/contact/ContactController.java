@@ -43,4 +43,14 @@ public class ContactController {
         return ResponseEntity.ok(contactService.deleteContactById(contactId));
 
     }
+
+    @GetMapping("/search-contact")
+    public ResponseEntity<List<DtoContact>> searchContact(
+            @RequestBody DtoContact dtoContact) {
+
+        return ResponseEntity.ok(contactService.searchContacts(dtoContact));
+
+    }
+
+
 }

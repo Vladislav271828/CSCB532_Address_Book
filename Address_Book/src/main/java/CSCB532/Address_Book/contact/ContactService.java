@@ -176,4 +176,17 @@ public class ContactService {
             throw new BadRequestException("User doesn't have permissions to perform this action.");
         }
     }
+
+    public List<DtoContact> searchContacts(DtoContact dtoContact) {
+        User user = authenticationService.getCurrentlyLoggedUser();
+
+        if ((dtoContact.getName() == null && dtoContact.getLastName() == null)) {
+            throw new BadRequestException("Missing input.");
+        }
+        List<Contact> userContacts = contactRepository.findAllByUserIdAndNameAndOrLastName(user.getId(), dtoContact.getName(), dtoContact.getLastName());
+        ModelMapper modelMapper = new ModelMapper();
+        return userContacts.stream()
+                .map(contact -> modelMapper.map(contact, DtoContact.class))
+                .collect(Collectors.toList());
+    }
 }
