@@ -16,7 +16,7 @@ function LoginSignup() {
     const [errMsg, setErrMsg] = useState('');
     const [success, setSuccess] = useState(false);
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             if (state == "Sign Up") {
@@ -27,7 +27,7 @@ function LoginSignup() {
                     }
                 )
                 setSuccess(true);
-                alert(JSON.stringify(response));
+                alert(JSON.stringify(response.data));
             }
             else {
                 const response = await axios.post(AUTH_URL,
@@ -40,7 +40,7 @@ function LoginSignup() {
                 alert(JSON.stringify(response));
             }
         } catch (err) {
-            setErrMsg('Failed');
+            setErrMsg(err.response.data.message);
         }
 
     }
