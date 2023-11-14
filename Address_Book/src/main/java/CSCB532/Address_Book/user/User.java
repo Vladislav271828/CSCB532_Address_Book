@@ -2,6 +2,7 @@ package CSCB532.Address_Book.user;
 
 
 import CSCB532.Address_Book.contact.Contact;
+import CSCB532.Address_Book.label.Label;
 import CSCB532.Address_Book.token.Token;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -39,8 +40,11 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
     @JsonIgnore
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     private List<Contact> contacts;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private List<Label> labels;
 
     private boolean verified;
 
@@ -65,10 +69,10 @@ public class User implements UserDetails {
         return true;
     }
 
-        @Override
-        public boolean isAccountNonLocked() {
-            return true;
-        }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
     public boolean isCredentialsNonExpired() {
