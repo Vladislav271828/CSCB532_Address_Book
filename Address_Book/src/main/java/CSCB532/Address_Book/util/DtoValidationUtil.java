@@ -117,7 +117,6 @@ public class DtoValidationUtil {
 
     public static boolean areAllContactDtoFieldsNull(DtoContact dtoContact) {
         return (
-                dtoContact.getImportance() == null &&
                         dtoContact.getPhoneNumber() == null &&
                         dtoContact.getName() == null &&
                         dtoContact.getComment() == null &&
