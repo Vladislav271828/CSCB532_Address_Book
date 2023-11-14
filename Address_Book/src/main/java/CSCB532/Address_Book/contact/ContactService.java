@@ -189,4 +189,10 @@ public class ContactService {
                 .map(contact -> modelMapper.map(contact, DtoContact.class))
                 .collect(Collectors.toList());
     }
+
+    public List<Contact> getAllContacts() {
+        User user = authenticationService.getCurrentlyLoggedUser();
+
+        return contactRepository.findAll();
+    }
 }

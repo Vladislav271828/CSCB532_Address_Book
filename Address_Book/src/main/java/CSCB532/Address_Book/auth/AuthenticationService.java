@@ -164,4 +164,25 @@ public class AuthenticationService {
         }
         return false;
     }
+
+    public boolean verifyUserAndChangeEmail(String code, String email) {
+        Optional<Verification> verificationOpt = verificationRepository.findByVerificationCode(code);
+
+        if (verificationOpt.isPresent()) {
+            Verification verification = verificationOpt.get();
+
+            if (!verification.isExpired()) {
+                User user = verification.getUser();
+                user.setVerified(true);
+                user.setEmail(email);
+                userRepository.save(user);
+
+                verification.setExpired(true);
+                verificationRepository.save(verification);
+
+                return true;
+            }
+        }
+        return false;
+    }
 }
