@@ -1,5 +1,6 @@
 package CSCB532.Address_Book.contact;
 
+import CSCB532.Address_Book.label.Label;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,6 @@ import lombok.NoArgsConstructor;
 public class DtoContact {
 
     private Integer id;
-    private Integer importance;
     private String name;
     private String lastName;
     private String phoneNumber;
@@ -22,4 +22,5 @@ public class DtoContact {
     private String fax;
     private String mobileNumber;
     private String comment;
+    private Label label;
 }

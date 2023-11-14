@@ -4,6 +4,9 @@ import CSCB532.Address_Book.auth.AuthenticationService;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.ContactNotFoundException;
+import CSCB532.Address_Book.exception.LabelNotFoundException;
+import CSCB532.Address_Book.label.Label;
+import CSCB532.Address_Book.label.LabelRepository;
 import CSCB532.Address_Book.user.User;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -23,11 +26,13 @@ public class ContactService {
 
     private final ContactRepository contactRepository;
     private final AuthenticationService authenticationService;
+    private final LabelRepository labelRepository;
 
     @Autowired
-    public ContactService(ContactRepository contactRepository, AuthenticationService authenticationService) {
+    public ContactService(ContactRepository contactRepository, AuthenticationService authenticationService, LabelRepository labelRepository) {
         this.contactRepository = contactRepository;
         this.authenticationService = authenticationService;
+        this.labelRepository = labelRepository;
     }
 
     /**
@@ -189,4 +194,39 @@ public class ContactService {
                 .map(contact -> modelMapper.map(contact, DtoContact.class))
                 .collect(Collectors.toList());
     }
+    @Transactional
+    public DtoContact addLabelToContact(Integer contactId, Integer labelId) {
+
+
+        //checks if the currently logged user is attempting to update a contact that's not theirs
+        validateUserPermission(contactId);
+
+
+
+        // Find the existing contact
+        Contact contact = contactRepository.findById(contactId)
+                .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new LabelNotFoundException("Label with ID " + labelId + " not found."));
+
+        // checks if the currently logged user is attempting to use a label that's not theirs
+        if (!authenticationService.getCurrentlyLoggedUser().getLabels().contains(label)) {
+            throw new BadRequestException("User doesn't have permissions to perform this action.");
+        }
+
+        // Save the updated contact
+        contact.setLabel(label);
+        label.getContacts().add(contact);
+        contactRepository.save(contact);
+        labelRepository.save(label);
+
+        // Map entity back to DTO and return
+        try {
+            ModelMapper modelMapper = new ModelMapper();
+            return modelMapper.map(contact, DtoContact.class);
+        } catch (DataAccessException exc) {
+            throw new DatabaseException("Issue with mapping the contact data: " + exc.getMessage(), exc);
+        }
+    }
+
 }
