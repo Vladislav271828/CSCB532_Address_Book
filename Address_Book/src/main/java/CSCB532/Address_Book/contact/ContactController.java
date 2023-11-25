@@ -52,5 +52,12 @@ public class ContactController {
 
     }
 
+    @PatchMapping("{contactId}/add-label/{labelId}")
+    public ResponseEntity<DtoContact> addLabelToContact(
+            @PathVariable Integer contactId,
+            @PathVariable Integer labelId) {
 
+        return ResponseEntity.ok(contactService.addLabelToContact(contactId, labelId));
+
+    }
 }

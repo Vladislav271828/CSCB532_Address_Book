@@ -1,7 +1,9 @@
 package CSCB532.Address_Book.contact;
 
 import CSCB532.Address_Book.customRow.CustomRow;
+import CSCB532.Address_Book.label.Label;
 import CSCB532.Address_Book.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,9 +22,6 @@ public class Contact {
     @Id
     @GeneratedValue//(strategy = GenerationType.IDENTITY) nz koe e po dobro
     private Integer id;
-
-    @Column(name = "imporance")
-    private Integer importance;
 
     @Column(name = "name")
     private String name;
@@ -51,9 +50,14 @@ public class Contact {
     @Column(name = "comment")
     private String comment;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "label_id")
+    private Label label;
 
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomRow> customRows;
@@ -62,7 +66,6 @@ public class Contact {
     public String toString() {
         return "Contact{" +
                 "id=" + id +
-                ", importance=" + importance +
                 ", name='" + name + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
