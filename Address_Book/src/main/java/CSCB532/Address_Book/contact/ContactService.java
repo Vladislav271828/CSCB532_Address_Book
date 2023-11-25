@@ -194,14 +194,17 @@ public class ContactService {
                 .map(contact -> modelMapper.map(contact, DtoContact.class))
                 .collect(Collectors.toList());
     }
+  
+    public List<Contact> getAllContacts() {
+        User user = authenticationService.getCurrentlyLoggedUser();
+
+        return contactRepository.findAll();
+    }
+
     @Transactional
     public DtoContact addLabelToContact(Integer contactId, Integer labelId) {
-
-
         //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
-
-
 
         // Find the existing contact
         Contact contact = contactRepository.findById(contactId)
