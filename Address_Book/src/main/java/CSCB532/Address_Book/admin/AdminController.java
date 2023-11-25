@@ -1,4 +1,4 @@
-package admin;
+package CSCB532.Address_Book.admin;
 
 import CSCB532.Address_Book.contact.Contact;
 import CSCB532.Address_Book.contact.DtoContact;
@@ -16,18 +16,10 @@ import java.util.List;
 public class AdminController {
     private final AdminService adminService;
 
-    //get all contacts from the database PRIORITY
+    //get all contacts from the database
     @GetMapping("/get-all-contacts-as-admin")
-    public ResponseEntity<List<Contact>> getAllContacts() {
+    public ResponseEntity<List<DtoContact>> getAllContacts() {
 
         return ResponseEntity.ok(adminService.getAllContactsAsAdmin());
-
     }
-
-    //change user's role (Not required)
-
-
-    //delete user profile (Not required)
-
-
 }
