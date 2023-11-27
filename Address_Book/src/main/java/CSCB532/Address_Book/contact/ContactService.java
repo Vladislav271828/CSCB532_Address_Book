@@ -205,12 +205,6 @@ public class ContactService {
                 .map(contact -> modelMapper.map(contact, DtoContact.class))
                 .collect(Collectors.toList());
     }
-  
-    public List<Contact> getAllContacts() {
-        User user = authenticationService.getCurrentlyLoggedUser();
-
-        return contactRepository.findAll();
-    }
 
     @Transactional
     public DtoContact addLabelToContact(Integer contactId, Integer labelId) {
@@ -271,7 +265,7 @@ public class ContactService {
 
     }
 
-    private String getCustomRowsAsString(List<DtoCustomRow> customRows) {
+    public String getCustomRowsAsString(List<DtoCustomRow> customRows) {
         StringBuilder customRowsString = new StringBuilder();
 
         if (customRows != null && !customRows.isEmpty()) {
