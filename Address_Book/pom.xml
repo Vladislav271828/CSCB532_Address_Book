@@ -92,6 +92,19 @@
 			<version>4.10.0</version>
 		</dependency>
 
+		<!-- Apache POI for working with Excel files -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.0.0</version> <!-- Use the latest version available -->
+		</dependency>
+
+		<!-- Apache POI for handling OOXML (Office Open XML) file formats -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.0.0</version> <!-- Use the same version as poi -->
+		</dependency>
 
 
 	</dependencies>

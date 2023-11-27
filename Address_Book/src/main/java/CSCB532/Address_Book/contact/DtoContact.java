@@ -1,10 +1,12 @@
 package CSCB532.Address_Book.contact;
 
+import CSCB532.Address_Book.customRow.DtoCustomRow;
 import CSCB532.Address_Book.label.Label;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @Builder
@@ -23,4 +25,7 @@ public class DtoContact {
     private String mobileNumber;
     private String comment;
     private Label label;
+    private List<DtoCustomRow> customRows;
+
+
 }
