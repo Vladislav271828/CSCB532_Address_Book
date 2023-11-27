@@ -30,7 +30,7 @@ function Login() {
                 setErrMsg('Unable to connect to server.');
             }
             else {
-                setErrMsg(err.response.data.message);
+                setErrMsg('Invalid email or password.');
             }
         }
     }
