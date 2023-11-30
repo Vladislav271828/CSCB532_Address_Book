@@ -6,12 +6,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -82,5 +84,23 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception exc){
         logger.error("General Exception occurred: {}", exc.getMessage());
         return buildErrorResponse(exc, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ErrorResponse> handle(NoSuchElementException exc) {
+
+        String errorMessage = "User with that email not found.";
+
+        logger.error("User not found: {}", errorMessage);
+        return buildErrorResponse(new Exception(errorMessage), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handle(BadCredentialsException exc) {
+
+        String errorMessage = "Bad credentials.";
+
+        logger.error("Incorrect Password: {}", errorMessage);
+        return buildErrorResponse(new Exception(errorMessage), HttpStatus.BAD_REQUEST);
     }
 }

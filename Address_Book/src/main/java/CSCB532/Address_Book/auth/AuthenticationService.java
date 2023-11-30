@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static CSCB532.Address_Book.util.DtoValidationUtil.checkUserDto;
@@ -58,8 +59,10 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .verified(false)//sets the initial status of the user as not verified basically
+                .contacts(new ArrayList<>())
+                .labels(new ArrayList<>())
+                .tokens(new ArrayList<>())
                 .build();
-
 
         var savedUser = repository.save(user); //save user in the db
         //TODO uncomment this after merge
