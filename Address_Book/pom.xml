@@ -78,6 +78,7 @@
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>3.0.2</version>
 		</dependency>
+    
 		<!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
@@ -96,6 +97,20 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
+    </dependency>
+      
+		<!-- Apache POI for working with Excel files -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.0.0</version> <!-- Use the latest version available -->
+		</dependency>
+
+		<!-- Apache POI for handling OOXML (Office Open XML) file formats -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.0.0</version> <!-- Use the same version as poi -->
 		</dependency>
 
 

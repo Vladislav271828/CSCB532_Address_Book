@@ -29,4 +29,12 @@ public interface ContactRepository extends JpaRepository<Contact, Integer>{
             @Param("lastName") String lastName
     );
 
+    @Query("SELECT c FROM Contact c " +
+            "WHERE (:name IS NULL OR c.name = :name) " +
+            "AND (:lastName IS NULL OR c.lastName = :lastName)")
+    List<Contact> findAllByNameAndOrLastName(
+            @Param("name") String name,
+            @Param("lastName") String lastName
+    );
+
 }
