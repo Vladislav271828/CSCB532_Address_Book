@@ -3,8 +3,8 @@ package CSCB532.Address_Book.contact;
 import CSCB532.Address_Book.auth.AuthenticationService;
 import CSCB532.Address_Book.customRow.DtoCustomRow;
 import CSCB532.Address_Book.exception.BadRequestException;
-import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.ContactNotFoundException;
+import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.LabelNotFoundException;
 import CSCB532.Address_Book.label.Label;
 import CSCB532.Address_Book.label.LabelRepository;
@@ -55,10 +55,6 @@ public class ContactService {
      * @throws DatabaseException   if there is an issue with saving the contact or mapping the result
      */
     public DtoContact createContact(DtoContact dtoContact) {
-        // Validation
-        if (dtoContact.getPhoneNumber() == null || dtoContact.getPhoneNumber().trim().isEmpty()) {
-            throw new BadRequestException("Invalid data provided (missing or empty phone number)");
-        }
 
         // Retrieve currently logged user
         User user = authenticationService.getCurrentlyLoggedUser();

@@ -16,9 +16,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -93,40 +91,41 @@ public class AuthenticationControllerTest {
     @Transactional
     public void whenRegisterUserWithDuplicateEmail_thenReturns400() throws Exception {
         // Arrange
-        String jsonPayload = "{\"firstName\": \"Moni\", \"lastName\": \"Doe\", \"email\": \"moni@gmail.com\", \"password\": \"Moni!Moni\" }";
+        String registerUserUri = "/api/v1/auth/register";
+        String firstName = "Donald";
+        String lastName = "Trump";
+        String email = "make_america_great_again@gmail.com";
+        String password = "ILBarakObama!!!";
 
-        // Perform the first registration
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
 
-        // Act & Assert
+        String jsonPayload = manageRegisterData(firstName, lastName, email, password);
+
+        // Register and save user
+        makePermitAllRequest(jsonPayload, registerUserUri, status().isOk());
+
         // Try to register again with the same email
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
-                .andExpect(status().isBadRequest()); // Expecting 400 Bad Request
+        MvcResult result = makePermitAllRequest(jsonPayload, registerUserUri, status().isBadRequest());
+
+        // Check fo custom message
+        assertTrue(result.getResponse().getContentAsString().contains("User with email "+email+" already exists."));
 
     }
 
 
     @Test
     @Transactional
-    public void whenRegisterUserWithShortPassword_thenReturnsBadRequest() throws Exception {
-        // Arrange
-        String jsonPayload = "{\"firstName\": \"Moni\", \"lastName\": \"Doe\", \"email\": \"moni@gmail.com\", \"password\": \"short\" }";
+    public void whenRegisterUserWithShortPassword_thenReturns400() throws Exception {
+// Arrange
+        String firstName = "Donald";
+        String lastName = "Trump";
+        String email = "make_america_great_again@gmail.com";
+        String password = "";
+        String registerUserUri = "/api/v1/auth/register";
 
-        // Act
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
-                .andExpect(status().isBadRequest())
-                .andReturn();
+        String jsonPayload = manageRegisterData(firstName, lastName, email, password);
+
+        // Act & Assert
+        MvcResult result = makePermitAllRequest(jsonPayload,registerUserUri, status().isBadRequest());
 
         // Assert
         String actualResponseBody = result.getResponse().getContentAsString();
@@ -138,7 +137,7 @@ public class AuthenticationControllerTest {
 
     @Test
     @Transactional
-    public void whenRegisterUserWithoutSpecialCharacter_thenReturnsBadRequest() throws Exception {
+    public void whenRegisterUserWithoutSpecialCharacter_thenReturns400() throws Exception {
         // Arrange
         String firstName = "Donald";
         String lastName = "Trump";
@@ -166,13 +165,13 @@ public class AuthenticationControllerTest {
 
     @Test
     @Transactional
-    public void whenRegisterUserWithoutCapitalLetter_thenReturnsBadRequest() throws Exception {
+    public void whenRegisterUserWithoutCapitalLetter_thenReturn400() throws Exception {
         // Arrange
+        String registerUserUri = "/api/v1/auth/register";
         String firstName = "Donald";
         String lastName = "Trump";
         String email = "make_america_great_again@gmail.com";
         String password = "ilbarakobama!"; // no uppercase character
-        String registerUserUri = "/api/v1/auth/register";
 
         String jsonPayload = manageRegisterData(firstName, lastName, email, password);
 
@@ -207,39 +206,65 @@ public class AuthenticationControllerTest {
         // Register user
        makePermitAllRequest(jsonPayload,registerUserUri, status().isOk());
 
-        jsonPayload = "{\"email\": \""+email+"\", \"password\": \""+password+"\" }";
-
+        String jsonPayloadLogin = manageLoginData(email, password);
         // Authenticate the user
         String authenticateUri = "/api/v1/auth/authenticate";
-        authenticateRequest(jsonPayload, authenticateUri, status().isOk());
+        authenticateRequest(jsonPayloadLogin, authenticateUri, status().isOk());
     }
 
 
     @Test
     @Transactional
-    public void whenLoggingInWithIncorrectEmail() throws Exception {
-        String jsonPayload = "{\"email\": \"moni@gmail.comm\", \"password\": \"PasswordPasswor@1\" }";
+    public void whenLoggingInWithIncorrectEmail_thenReturn404() throws Exception {
         String authenticateUri = "/api/v1/auth/authenticate";
+        String firstName = "Barak";
+        String lastName = "Obama";
+        String email = "BarakObamasEmail@gmail.com";
+        String password = "!ITooLoveDonald";
+
+        String jsonPayloadRegister = manageRegisterData(firstName, lastName, email, password);
 
         // Make a request to authenticate should return a not found since there is no user created in the database with such email
-        MvcResult result = makePermitAllRequest(jsonPayload, authenticateUri, status().isNotFound());
+        MvcResult result = makePermitAllRequest(jsonPayloadRegister, authenticateUri, status().isNotFound());
 
         assertTrue(result.getResponse().getContentAsString().contains("User with that email not found."));
     }
 
     @Test
     @Transactional
-    public void whenLoggingInWithIncorrectPassword() throws Exception {
-        String jsonPayloadRegister = "{\"firstName\" : \"Moni\",\"lastName\" : \"\", \"email\": \"moni@gmail.comm\", \"password\": \"PasswordPasswor@1\" }";
+    public void whenLoggingInWithIncorrectEmailFormat_thenReturn400() throws Exception {
+        String authenticateUri = "/api/v1/auth/authenticate";
+        String firstName = "Barak";
+        String lastName = "Obama";
+        String email = "IncorrectEmailFormat";
+        String password = "!ITooLoveDonald";
 
-        String jsonPayloadLogin = "{\"email\": \"moni@gmail.comm\", \"password\": \"PasswordPasswor@\" }";
+        String jsonPayloadRegister = manageRegisterData(firstName, lastName, email, password);
 
+        // Make a request to authenticate should return a not found since there is no user created in the database with such email
+        MvcResult result = makePermitAllRequest(jsonPayloadRegister, authenticateUri, status().isBadRequest());
+        assertTrue(result.getResponse().getContentAsString().contains("Invalid email format."));
+    }
+
+    @Test
+    @Transactional
+    public void whenLoggingInWithIncorrectPassword_thenReturns400() throws Exception {
         String registerUserUri = "/api/v1/auth/register";
         String authenticateUri = "/api/v1/auth/authenticate";
+
+        String firstName = "Barak";
+        String lastName = "Obama";
+        String email = "BarakObamasEmail@gmail.com";
+        String password = "!ITooLoveDonald";
+
+        String jsonPayloadRegister = manageRegisterData(firstName, lastName, email, password);
+
 
         // Create a user
         makePermitAllRequest(jsonPayloadRegister, registerUserUri, status().isOk());
 
+        password = "wrongPasswordHere!";
+        String jsonPayloadLogin = manageLoginData(email, password);
         // Make a request to authenticate should return a not found since there is no user created in the database with such email
         MvcResult result = makePermitAllRequest(jsonPayloadLogin, authenticateUri, status().isBadRequest());
 
@@ -300,6 +325,10 @@ public class AuthenticationControllerTest {
                 "\"email\": \""+email+"\", " +
                 "\"password\": \""+password+"\" " +
                 "}";
+    }
+
+    public String manageLoginData(String email, String password){
+        return "{\"email\": \""+email+"\", \"password\": \""+password+"\" }";
     }
 
 }

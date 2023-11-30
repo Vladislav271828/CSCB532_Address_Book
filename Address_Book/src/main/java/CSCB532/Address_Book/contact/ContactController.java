@@ -1,5 +1,6 @@
 package CSCB532.Address_Book.contact;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class ContactController {
 
     @PostMapping("/create-contact")
     public ResponseEntity<DtoContact> createContact(
-            @RequestBody DtoContact dtoContact) {
+            @Valid @RequestBody DtoContact dtoContact) {
         return ResponseEntity.ok(contactService.createContact(dtoContact));
     }
 
