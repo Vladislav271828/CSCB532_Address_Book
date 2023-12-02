@@ -1,3 +1,15 @@
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(3%);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -19,4 +31,18 @@
   padding: 0 20px;
   background-color: #eed481;
   min-height: 100vh;
+}
+
+span:hover {
+  color: #646464;
+}
+
+span {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #464646;
+}
+
+p {
+  color: #464646;
 }

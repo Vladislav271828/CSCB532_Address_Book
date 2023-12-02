@@ -29,7 +29,6 @@ function SignUp() {
             setFN('');
             setLN('');
             setPwd('');
-            alert(JSON.stringify(response.data.token));
         } catch (err) {
             setSuccess(false);
             if (!err?.response) {
