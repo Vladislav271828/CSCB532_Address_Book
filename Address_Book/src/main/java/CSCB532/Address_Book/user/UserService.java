@@ -1,18 +1,12 @@
 package CSCB532.Address_Book.user;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
-import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-import static CSCB532.Address_Book.util.DtoValidationUtil.*;
 
 @Service
 @RequiredArgsConstructor

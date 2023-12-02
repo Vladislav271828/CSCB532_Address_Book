@@ -1,6 +1,5 @@
 package CSCB532.Address_Book.token;
 
-import CSCB532.Address_Book.token.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

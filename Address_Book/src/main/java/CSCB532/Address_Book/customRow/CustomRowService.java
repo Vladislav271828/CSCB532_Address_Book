@@ -30,7 +30,7 @@ public class CustomRowService {
     }
 
     public DtoCustomRow createCustomRow(DtoCustomRow dtoCustomRow) {
-        validateCustomRowInput(dtoCustomRow);
+        //validateCustomRowInput(dtoCustomRow);
         validateContactExists(dtoCustomRow.getContactId());
         validateUserPermission(dtoCustomRow.getContactId());
 
@@ -38,18 +38,19 @@ public class CustomRowService {
                 .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + dtoCustomRow.getContactId() + " not found."));
 
         ModelMapper modelMapper = new ModelMapper();
-        modelMapper.addMappings(new PropertyMap<DtoCustomRow, CustomRow>() {
-            @Override
-            protected void configure() {
-                skip(destination.getId());
-            }
-        });
+//        modelMapper.addMappings(new PropertyMap<DtoCustomRow, CustomRow>() {
+//            @Override
+//            protected void configure() {
+//                skip(destination.getId());
+//            }
+//        });
 
         CustomRow customRow = modelMapper.map(dtoCustomRow, CustomRow.class);
         customRow.setContact(contact);
 
         try {
             CustomRow createdCustomRow = customRowRepository.save(customRow);
+            System.out.println("Custom row created: " + createdCustomRow.toString());
             return modelMapper.map(createdCustomRow, DtoCustomRow.class);
         } catch (Exception exc) {
             throw new DatabaseException(exc.getMessage());
@@ -58,14 +59,44 @@ public class CustomRowService {
 
 
     public DtoCustomRow updateCustomRow(Integer id, DtoCustomRow dtoCustomRow) {
-        if (id == null || id < 0) {
-            throw new BadRequestException("Invalid custom row ID.");
-        }
 
         CustomRow existingCustomRow = customRowRepository.findById(id)
                 .orElseThrow(() -> new CustomRowNotFoundException("Custom row not found for ID: " + id));
 
-        validateUserPermission(existingCustomRow.getContact().getId());
+        boolean isBlank = false;
+        if (dtoCustomRow.getCustomField() != null){
+            if (dtoCustomRow.getCustomField().isBlank()){
+                isBlank = true;
+//                throw new BadRequestException("Field Name can't be blank.");
+            }
+            if (existingCustomRow.getCustomField().equals(dtoCustomRow.getCustomField())){
+                dtoCustomRow.setCustomField(null);
+//                throw new BadRequestException("Field Name can't be the same.");
+            }else if(isBlank){
+                dtoCustomRow.setCustomField(null);
+            }
+        }
+
+        boolean isNameBlank = false;
+        if ( dtoCustomRow.getCustomName() != null){
+            if (dtoCustomRow.getCustomName().isBlank()){
+                isNameBlank = true;
+//                throw new BadRequestException("Custom Name can't be empty.");
+            }
+            if (existingCustomRow.getCustomName().equals(dtoCustomRow.getCustomName())){
+                dtoCustomRow.setCustomName(null);
+//                    throw new BadRequestException("Custom Name can't be the same.");
+            }else if(isNameBlank){
+                dtoCustomRow.setCustomName(null);
+            }
+        }
+
+        if (dtoCustomRow.getCustomName() == null && dtoCustomRow.getCustomField() == null){
+            throw new BadRequestException("Incorrect request body");
+        }
+
+
+            validateUserPermission(existingCustomRow.getContact().getId());
 
         ModelMapper modelMapper = configureModelMapperForUpdate();
         modelMapper.map(dtoCustomRow, existingCustomRow);

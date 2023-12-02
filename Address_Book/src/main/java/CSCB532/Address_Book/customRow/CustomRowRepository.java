@@ -1,6 +1,5 @@
 package CSCB532.Address_Book.customRow;
 
-import CSCB532.Address_Book.contact.Contact;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -159,7 +159,7 @@ public class ContactService {
      * @throws ContactNotFoundException if no contact with the specified ID is found.
      * @throws DatabaseException       if there is an issue with the database operation.
      */
-    public String deleteContactById(Integer contactId) {
+    public void deleteContactById(Integer contactId) {
         // Validate input
         if (contactId == null || contactId < 0) {
             throw new BadRequestException("Contact ID must be a positive integer.");
@@ -176,8 +176,6 @@ public class ContactService {
         } catch (DataAccessException e) {
             throw new DatabaseException("Couldn't delete contact with id " + contactId, e.getCause());
         }
-
-        return "Contact with id " + contact.getId() + " deleted successfully";
     }
 
     private void validateUserPermission(Integer contactId) {

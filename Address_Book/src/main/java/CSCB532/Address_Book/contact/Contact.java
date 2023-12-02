@@ -59,6 +59,7 @@ public class Contact {
     @JoinColumn(name = "label_id")
     private Label label;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomRow> customRows;
 
@@ -76,7 +77,7 @@ public class Contact {
                 ", mobileNumber='" + mobileNumber + '\'' +
                 ", comment='" + comment + '\'' +
                 //", user=" + user +
-                ", customRows=" + customRows +
+//                ", customRows=" + customRows +
                 '}';
     }
 }

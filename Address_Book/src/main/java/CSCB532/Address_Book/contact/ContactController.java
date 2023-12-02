@@ -43,8 +43,8 @@ public class ContactController {
 
     @DeleteMapping("/delete-contact/{contactId}")
     public ResponseEntity<String> deleteContact(@PathVariable Integer contactId) {
-
-        return ResponseEntity.ok(contactService.deleteContactById(contactId));
+        contactService.deleteContactById(contactId);
+        return ResponseEntity.noContent().build();
 
     }
 
