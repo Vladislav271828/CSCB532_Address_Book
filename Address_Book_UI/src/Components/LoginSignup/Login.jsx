@@ -1,7 +1,8 @@
 import './LoginSignup.css'
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from '../../API/axios'
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import AuthContext from "../../Context/AuthProvider";
 
 const AUTH_URL = '/api/v1/auth/authenticate'
 
@@ -10,7 +11,10 @@ function Login() {
     const [password, setPwd] = useState('');
 
     const [errMsg, setErrMsg] = useState('');
-    const [success, setSuccess] = useState(false);
+    // const [success, setSuccess] = useState(false);
+
+    const { setAuth, auth } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,61 +25,57 @@ function Login() {
                     headers: { 'Content-Type': 'application/json' },
                 }
             )
-            setSuccess(true);
             setEmail('');
             setPwd('');
-            alert(JSON.stringify(response.data.token));
+            setAuth(response.data.token)
+            navigate("/");
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('Unable to connect to server.');
             }
             else {
-                setErrMsg(err.response.data.message);
+                setErrMsg('Invalid email or password.');
             }
         }
     }
 
     return (
         <>
-            {success ? (
-                <p>Success!</p>
-            ) : (
-                <div className="login-form-container">
-                    <h1 className="login-form-header">Log In</h1>
-                    {errMsg == "" ? <></> : <p className='login-form-text' style={{ color: "red" }}>{errMsg}</p>}
-                    <form onSubmit={handleSubmit}>
-                        <input type="email"
-                            placeholder='Email'
-                            id="email"
-                            required
-                            onChange={(e) => setEmail(e.target.value)}
-                            onFocus={() => setErrMsg('')}
-                        />
-                        <input
-                            type="password"
-                            placeholder='Password'
-                            id="password"
-                            required
-                            onChange={(e) => setPwd(e.target.value)}
-                            onFocus={() => setErrMsg('')}
-                        />
+            <div className="login-form-container">
+                <h1 className="login-form-header">Log In</h1>
+                {errMsg == "" ? <></> : <p className='login-form-text' style={{ color: "red" }}>{errMsg}</p>}
+                <form onSubmit={handleSubmit}>
+                    <input type="email"
+                        placeholder='Email'
+                        id="email"
+                        required
+                        onChange={(e) => setEmail(e.target.value)}
+                        onFocus={() => setErrMsg('')}
+                    />
+                    <input
+                        type="password"
+                        placeholder='Password'
+                        id="password"
+                        required
+                        onChange={(e) => setPwd(e.target.value)}
+                        onFocus={() => setErrMsg('')}
+                    />
 
-                        <p className='login-form-text'>
-                            Already have an account? <Link
-                                to="/signup"
-                                tabIndex={0}>
-                                <span>Click here to sign up.</span>
-                            </Link>
-                        </p>
-                        <button
-                            className="submit-btn"
-                            tabIndex={0}
-                            type='submit'>
-                            Log In
-                        </button>
-                    </form>
-                </div>
-            )}
+                    <p className='login-form-text'>
+                        Already have an account? <Link
+                            to="/signup"
+                            tabIndex={0}>
+                            <span>Click here to sign up.</span>
+                        </Link>
+                    </p>
+                    <button
+                        className="submit-btn"
+                        tabIndex={0}
+                        type='submit'>
+                        Log In
+                    </button>
+                </form>
+            </div>
         </>
     )
 }
