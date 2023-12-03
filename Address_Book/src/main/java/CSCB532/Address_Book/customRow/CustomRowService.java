@@ -30,7 +30,6 @@ public class CustomRowService {
     }
 
     public DtoCustomRow createCustomRow(DtoCustomRow dtoCustomRow) {
-        //validateCustomRowInput(dtoCustomRow);
         validateContactExists(dtoCustomRow.getContactId());
         validateUserPermission(dtoCustomRow.getContactId());
 
@@ -38,19 +37,13 @@ public class CustomRowService {
                 .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + dtoCustomRow.getContactId() + " not found."));
 
         ModelMapper modelMapper = new ModelMapper();
-//        modelMapper.addMappings(new PropertyMap<DtoCustomRow, CustomRow>() {
-//            @Override
-//            protected void configure() {
-//                skip(destination.getId());
-//            }
-//        });
+
 
         CustomRow customRow = modelMapper.map(dtoCustomRow, CustomRow.class);
         customRow.setContact(contact);
 
         try {
             CustomRow createdCustomRow = customRowRepository.save(customRow);
-            System.out.println("Custom row created: " + createdCustomRow.toString());
             return modelMapper.map(createdCustomRow, DtoCustomRow.class);
         } catch (Exception exc) {
             throw new DatabaseException(exc.getMessage());
@@ -151,6 +144,9 @@ public class CustomRowService {
         validateUserPermission(contactId);
 
         List<CustomRow> customRows = customRowRepository.findByContactId(contactId);
+        if (customRows.isEmpty()){
+            throw new CustomRowNotFoundException("No Custom Rows found for contact with id " + contactId);
+        }
         try {
             customRowRepository.deleteAll(customRows);
         } catch (DataAccessException exc) {
@@ -168,18 +164,7 @@ public class CustomRowService {
         }
     }
 
-    private void validateCustomRowInput(DtoCustomRow dtoCustomRow) {
-        if (dtoCustomRow.getContactId() == null) {
-            throw new BadRequestException("Missing contact ID");
-        } else if (dtoCustomRow.getContactId() < 0) {
-            throw new BadRequestException("Invalid Contact ID: is negative value.");
-        } else if (dtoCustomRow.getCustomField() == null ||
-                dtoCustomRow.getCustomName() == null ||
-                dtoCustomRow.getCustomName().trim().isEmpty() ||
-                dtoCustomRow.getCustomField().trim().isEmpty()) {
-            throw new BadRequestException("Missing input: every field must have a value.");
-        }
-    }
+
 
     private void validateContactExists(Integer contactId) {
         if (contactRepository.findById(contactId).isEmpty()) {

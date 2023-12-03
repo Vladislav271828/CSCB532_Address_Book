@@ -2,7 +2,6 @@ package CSCB532.Address_Book.auth;
 
 import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.customRow.DtoCustomRow;
-import CSCB532.Address_Book.user.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,15 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.io.IOException;
 
@@ -35,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-public class ContactControllerTest {
+public class RequestsTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -501,13 +496,9 @@ public class ContactControllerTest {
         String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
 
         //this creates a contact with the before each user
-        MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+        createContact(jsonPayloadDonald, jwtToken, status().isOk());
 
-        //get result to extract id
-        String response = contactResult.getResponse().getContentAsString();
 
-        //get created contact id
-        String idObamaContactStr = response.substring(response.indexOf("\"id\":") + 5, response.indexOf(","));
 
         var customRow = DtoCustomRow.builder()
                 .customName("What I think about Barak Obama")
@@ -545,13 +536,8 @@ public class ContactControllerTest {
         String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
 
         //this creates a contact with the before each user
-        MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+        createContact(jsonPayloadDonald, jwtToken, status().isOk());
 
-        //get result to extract id
-        String response = contactResult.getResponse().getContentAsString();
-
-        //get created contact id
-        String idObamaContactStr = response.substring(response.indexOf("\"id\":") + 5, response.indexOf(","));
 
         var customRow = DtoCustomRow.builder()
                 .contactId(-1)
@@ -923,7 +909,7 @@ public class ContactControllerTest {
 
     @Test
     @Transactional
-    public void updateCustomRowName_thenExpects400() throws Exception {
+    public void updateCustomRowNameWithWhiteSpace_thenExpects400() throws Exception {
         //create contact with the before each user
         var contactDtoToCreateContactObama = DtoContact.builder()
                 .name("Barak")
@@ -988,7 +974,7 @@ public class ContactControllerTest {
 
     @Test
     @Transactional
-    public void updateCustomRowField_thenExpects400() throws Exception {
+    public void updateCustomRowFieldWithWhiteSpace_thenExpects400() throws Exception {
         //create contact with the before each user
         var contactDtoToCreateContactObama = DtoContact.builder()
                 .name("Barak")
@@ -1025,7 +1011,7 @@ public class ContactControllerTest {
         //get id custom row with json node
         JsonNode jsonNodeCustomRow = convertFromStringToJson(createdCustomRowResult.getResponse().getContentAsString());
 
-        String idCustomRowStr = jsonNodeCustomRow.get("contactId").asText();
+        String idCustomRowStr = jsonNodeCustomRow.get("id").asText();
 
         //update with white space
         customRow.setCustomField(" ");
@@ -1168,6 +1154,935 @@ public class ContactControllerTest {
 
 
 
+    @Test
+    @Transactional
+    public void updateForeignCustomRow_thenExpects400() throws Exception {
+        //create contact with the before each user
+        var contactDtoToCreateContactObama = DtoContact.builder()
+                .name("Barak")
+                .lastName("Obama")
+                .phoneNumber("0893475000")
+                .nameOfCompany("Obama Care")
+                .address("The White House")
+                .email("ObamaLovesYou@usa.com")
+                .fax("+1-907-555-1234")
+                .mobileNumber("0574965333")
+                .comment("I love this guy.. Obviously.")
+                .build();
+        String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+        //this creates a contact with the before each user
+        MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+        //get id with json node
+        JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+        String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+        var customRow = DtoCustomRow.builder()
+                .contactId(Integer.parseInt(idObamaContactStr))
+                .customName("What I think about Barak Obama")
+                .customField("I don't like him")
+                .build();
+
+        //prep request
+        String jsonPayload = convertFromObjectToJson(customRow).toString();
+
+        //create custom row to that contact: data needed: contactId, customName, customField
+        MvcResult createdCustomRowResult = createCustomRow(jsonPayload,jwtToken,status().isOk());
+
+
+        //get id custom row with json node
+        JsonNode jsonNodeCustomRow = convertFromStringToJson(createdCustomRowResult.getResponse().getContentAsString());
+
+        String idCustomRowStr = jsonNodeCustomRow.get("id").asText();
+
+
+        //create new user
+        var registerObamaDto = RegisterRequest.builder()
+                .firstName("Barak")
+                .lastName("Obama")
+                .email("BarakObama@usa.com")
+                .password("!l0V3D0n41D7RuMp")
+                .build();
+        MvcResult registerObamaResult = createUser(registerObamaDto);
+
+        //extract jwt token
+        String newlyCreatedUserJwtToken = extractJwtToken(registerObamaResult.getResponse().getContentAsString());
+
+        //set the name and fie to null - expected to get Incorrect request body
+        customRow.setCustomField("Actually I like him very much.");
+
+        //prep request to update
+        jsonPayload = convertFromObjectToJson(customRow).toString();
+
+        MvcResult updateResult = updateCustomRow(jsonPayload, idCustomRowStr, newlyCreatedUserJwtToken, status().isBadRequest());
+        JsonNode updateResultJsonNode = convertFromStringToJson(updateResult.getResponse().getContentAsString());
+
+
+        assertEquals("User doesn't have permissions to perform this action.",updateResultJsonNode.get("message").asText(), "No permission to edit this custom row.");
+
+    }
+
+
+
+
+
+
+//case where it finds it with 200
+@Test
+@Transactional
+public void getAllCustomRowsForContactId_thenExpects400() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+    var customRow = DtoCustomRow.builder()
+            .contactId(Integer.parseInt(idObamaContactStr))
+            .customName("What I think about Barak Obama")
+            .customField("I don't like him")
+            .build();
+
+    // prep request to create custom row
+    String jsonPayload = convertFromObjectToJson(customRow).toString();
+
+    // create 5 custom rows to that contact: data needed: contactId, customName, customField
+            for (int i = 0; i < 5; i++){
+
+                createCustomRow(jsonPayload,jwtToken,status().isOk());
+            }
+
+    // make a get all request with the contact id
+    MvcResult resultCustomRowsForContact = getAllCustomRowsForContactId(jwtToken, idObamaContactStr, status().isOk());
+
+    // convert to json node to later check for content or length
+    JsonNode customRowListResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertTrue(customRowListResult.isArray(), "Is not a list.");
+}
+
+
+//case where the custom row id is 404
+@Test
+@Transactional
+public void getAllCustomRowsForContactIdNotFound_thenExpects404() throws Exception {
+    // make a get all request with the contact id
+    MvcResult resultCustomRowsForContact = getAllCustomRowsForContactId(jwtToken, "99999", status().isNotFound());
+
+    // convert to json node to later check for content or length
+    JsonNode customRowListResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("Contact with ID 99999 not found.", customRowListResult.get("message").asText());
+}
+
+
+
+//case where User doesn't have permissions to perform this action. 400
+@Test
+@Transactional
+public void getAllCustomRowsForForeignContact_thenExpects400() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+    var customRow = DtoCustomRow.builder()
+            .contactId(Integer.parseInt(idObamaContactStr))
+            .customName("What I think about Barak Obama")
+            .customField("I don't like him")
+            .build();
+
+    // prep request to create custom row
+    String jsonPayload = convertFromObjectToJson(customRow).toString();
+
+    // create 5 custom rows to that contact: data needed: contactId, customName, customField
+    for (int i = 0; i < 5; i++){
+
+        createCustomRow(jsonPayload,jwtToken,status().isOk());
+    }
+
+
+    //create new user
+    var registerObamaDto = RegisterRequest.builder()
+            .firstName("Barak")
+            .lastName("Obama")
+            .email("BarakObama@usa.com")
+            .password("!l0V3D0n41D7RuMp")
+            .build();
+    MvcResult registerObamaResult = createUser(registerObamaDto);
+
+    //extract jwt token
+    String newlyCreatedUserJwtToken = extractJwtToken(registerObamaResult.getResponse().getContentAsString());
+
+
+
+
+    // make a get all request with the contact id of first user
+    MvcResult resultCustomRowsForContact = getAllCustomRowsForContactId(newlyCreatedUserJwtToken, idObamaContactStr, status().isBadRequest());
+
+    // convert to json node to later check for content or length
+    JsonNode customRowListResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("User doesn't have permissions to perform this action.", customRowListResult.get("message").asText());
+}
+
+
+//case when deleting with 204
+@Test
+@Transactional
+public void deleteAllCustomRowsForContact_thenExpects204() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+    var customRow = DtoCustomRow.builder()
+            .contactId(Integer.parseInt(idObamaContactStr))
+            .customName("What I think about Barak Obama")
+            .customField("I don't like him")
+            .build();
+
+    // prep request to create custom row
+    String jsonPayload = convertFromObjectToJson(customRow).toString();
+
+    // create 5 custom rows to that contact: data needed: contactId, customName, customField
+    for (int i = 0; i < 5; i++){
+
+        createCustomRow(jsonPayload,jwtToken,status().isOk());
+    }
+
+
+
+    // make a get all request with the contact id
+    MvcResult resultCreateCustomRowsForContact = getAllCustomRowsForContactId(jwtToken, idObamaContactStr, status().isOk());
+    JsonNode customRowListResult = convertFromStringToJson(resultCreateCustomRowsForContact.getResponse().getContentAsString());
+
+    assertTrue(customRowListResult.isArray(),"Is not an array.");
+
+    // delete all custom rows for contact id
+    MvcResult resultDeleteCustomRowsForContact = deleteCustomRowsByContactId(jwtToken, idObamaContactStr, status().isNoContent());
+
+    // assert
+    assertEquals(204., resultDeleteCustomRowsForContact.getResponse().getStatus());
+}
+
+
+
+//case when User doesn't have permissions to perform this action.
+@Test
+@Transactional
+public void deleteAllCustomRowsForForeignContact_thenExpects400() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+
+
+
+    //create new user
+    var registerObamaDto = RegisterRequest.builder()
+            .firstName("Barak")
+            .lastName("Obama")
+            .email("BarakObama@usa.com")
+            .password("!l0V3D0n41D7RuMp")
+            .build();
+    MvcResult registerObamaResult = createUser(registerObamaDto);
+
+    //extract jwt token
+    String newlyCreatedUserJwtToken = extractJwtToken(registerObamaResult.getResponse().getContentAsString());
+
+
+
+
+    // make a delete all request with the contact id of first user
+    MvcResult resultCustomRowsForContact = deleteCustomRowsByContactId(newlyCreatedUserJwtToken, idObamaContactStr, status().isBadRequest());
+
+    // convert to json node to later check for content or length
+    JsonNode deleteCustomRowForForeignContactJsonNodeResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("User doesn't have permissions to perform this action.", deleteCustomRowForForeignContactJsonNodeResult.get("message").asText());
+}
+
+
+
+//case when trying to delete custom rows of contact but there are no custom rows
+@Test
+@Transactional
+public void deleteAllCustomRowsForContactWithNoCustomRows_thenExpects404() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+
+
+
+    // make a delete all request with the contact id of first user
+    MvcResult resultCustomRowsForContact = deleteCustomRowsByContactId(jwtToken, idObamaContactStr, status().isNotFound());
+
+    // convert to json node to later check for content or length
+    JsonNode deleteCustomRowForForeignContactJsonNodeResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("No Custom Rows found for contact with id " + idObamaContactStr, deleteCustomRowForForeignContactJsonNodeResult.get("message").asText());
+}
+
+
+
+//case when contact not found
+@Test
+@Transactional
+public void deleteAllCustomRowsForContactIdNotFound_thenExpects404() throws Exception {
+
+    // make a delete all request with the contact id of first user
+    MvcResult resultCustomRowsForContact = deleteCustomRowsByContactId(jwtToken, "99999", status().isNotFound());
+
+    // convert to json node to later check for content or length
+    JsonNode deleteCustomRowForForeignContactJsonNodeResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("Contact with ID 99999 not found.", deleteCustomRowForForeignContactJsonNodeResult.get("message").asText());
+}
+
+
+
+//case when deleting custom row 204
+@Test
+@Transactional
+public void deleteCustomRowForCustomRowId_thenExpects204() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+    var customRow = DtoCustomRow.builder()
+            .contactId(Integer.parseInt(idObamaContactStr))
+            .customName("What I think about Barak Obama")
+            .customField("I don't like him")
+            .build();
+
+    // prep request to create custom row
+    String jsonPayload = convertFromObjectToJson(customRow).toString();
+
+    // create custom row to that contact: data needed: contactId, customName, customField
+    MvcResult createdCustomRowResult = createCustomRow(jsonPayload,jwtToken,status().isOk());
+
+    JsonNode createdCustomRowJsonResult = convertFromStringToJson(createdCustomRowResult.getResponse().getContentAsString());
+
+    String customRowIdStr = createdCustomRowJsonResult.get("id").asText();
+
+    // delete created custom rows for custom row id
+    MvcResult resultDeleteCustomRowsForContact = deleteCustomRowById(jwtToken, customRowIdStr, status().isNoContent());
+
+    // assert
+    assertEquals(204., resultDeleteCustomRowsForContact.getResponse().getStatus());
+}
+
+//case when deleting custom row not found
+@Test
+@Transactional
+public void deleteCustomRowForContactIdNotFound_thenExpects404() throws Exception {
+    // make a get all request with the contact id
+    MvcResult resultCustomRowsForContact = deleteCustomRowById(jwtToken, "99999", status().isNotFound());
+
+    // convert to json node to later check for content or length
+    JsonNode customRowListResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("Custom row not found for ID: 99999", customRowListResult.get("message").asText());
+}
+
+
+
+//case when deleting custom row User doesn't have permissions to perform this action. 400
+@Test
+@Transactional
+public void deleteCustomRowForForeignCustomRow_thenExpects400() throws Exception {
+    // create contact with the before each user
+    var contactDtoToCreateContactObama = DtoContact.builder()
+            .name("Barak")
+            .lastName("Obama")
+            .phoneNumber("0893475000")
+            .nameOfCompany("Obama Care")
+            .address("The White House")
+            .email("ObamaLovesYou@usa.com")
+            .fax("+1-907-555-1234")
+            .mobileNumber("0574965333")
+            .comment("I love this guy.. Obviously.")
+            .build();
+    String jsonPayloadDonald = manageContactPayload(contactDtoToCreateContactObama, false);
+
+    // this creates a contact with the before each user
+    MvcResult contactResult = createContact(jsonPayloadDonald, jwtToken, status().isOk());
+
+    // get id with json node to create custom row with contactId of this contact
+    JsonNode jsonNodeObama = convertFromStringToJson(contactResult.getResponse().getContentAsString());
+
+    String idObamaContactStr = jsonNodeObama.get("id").asText();
+
+    var customRow = DtoCustomRow.builder()
+            .contactId(Integer.parseInt(idObamaContactStr))
+            .customName("What I think about Barak Obama")
+            .customField("I don't like him")
+            .build();
+
+    //prep request
+    String jsonPayload = convertFromObjectToJson(customRow).toString();
+
+    //create custom row to that contact: data needed: contactId, customName, customField
+    MvcResult createdCustomRowResult = createCustomRow(jsonPayload,jwtToken,status().isOk());
+
+
+    //get id custom row with json node
+    JsonNode jsonNodeCustomRow = convertFromStringToJson(createdCustomRowResult.getResponse().getContentAsString());
+
+    String idCustomRowStr = jsonNodeCustomRow.get("id").asText();
+
+    //create new user
+    var registerObamaDto = RegisterRequest.builder()
+            .firstName("Barak")
+            .lastName("Obama")
+            .email("BarakObama@usa.com")
+            .password("!l0V3D0n41D7RuMp")
+            .build();
+    MvcResult registerObamaResult = createUser(registerObamaDto);
+
+    //extract jwt token
+    String newlyCreatedUserJwtToken = extractJwtToken(registerObamaResult.getResponse().getContentAsString());
+
+
+
+
+    // make a delete all request with the contact id of first user
+    MvcResult resultCustomRowsForContact = deleteCustomRowById(newlyCreatedUserJwtToken, idCustomRowStr, status().isBadRequest());
+
+    // convert to json node to later check for content or length
+    JsonNode deleteCustomRowForForeignContactJsonNodeResult = convertFromStringToJson(resultCustomRowsForContact.getResponse().getContentAsString());
+
+    // assert
+    assertEquals("User doesn't have permissions to perform this action.", deleteCustomRowForForeignContactJsonNodeResult.get("message").asText());
+}
+
+
+
+//get user info 200
+@Test
+@Transactional
+public void getUserInformation_thenExpect200() throws Exception {
+    // use the before user jwt to authenticate the request
+    // make the request
+    MvcResult userInfoResult = getUserInformation(jwtToken);
+
+    //convert result to jsonNode
+    JsonNode jsonNodeUserInfoResult = convertFromStringToJson(userInfoResult.getResponse().getContentAsString());
+    String actualFirstName = jsonNodeUserInfoResult.get("firstName").asText();
+    String actualLastName = jsonNodeUserInfoResult.get("lastName").asText();
+    String actualEmail = jsonNodeUserInfoResult.get("email").asText();
+
+
+    // assert
+    assertAll("Custom row validations",
+            () -> assertEquals("Donald", actualFirstName, "First name mismatch"),
+            () -> assertEquals("Trump", actualLastName, "Last name mismatch"),
+            () -> assertEquals("DonaldTrump@usa.com", actualEmail, "Custom field mismatch")
+
+    );
+
+}
+
+
+//change password 200
+@Test
+@Transactional
+public void changePassword_thenExpect200() throws Exception {
+    // use the before user jwt to authenticate the request
+
+    //new password
+    String newPassword = "!(*)QH@WFRH@";
+
+    String jsonRequestPayload = "{\"password\":\""+newPassword+"\"}";
+
+
+    // make the request
+    MvcResult userInfoResult = changePassword(jsonRequestPayload, jwtToken, status().isOk());
+
+    //convert result to jsonNode
+    String actualResult = userInfoResult.getResponse().getContentAsString();
+
+
+    // assert
+    assertEquals("Password changed Successfully",actualResult,"Message mismatch");
+
+}
+
+
+    //change first and last name 200
+    @Test
+    @Transactional
+    public void changeFirstAndLastName_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newFirstName = "Barak";
+        String newLastName = "Obama";
+
+        String jsonRequestPayload = "{\"firstName\":\""+newFirstName+"\",\"lastName\":\""+newLastName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isOk());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String actualFirstName = actualResultJsonNode.get("firstName").asText();
+        String actualLastName = actualResultJsonNode.get("lastName").asText();
+
+        // assert
+        assertAll("Custom row validations",
+                () -> assertEquals(newFirstName, actualFirstName, "First name mismatch"),
+                () -> assertEquals(newLastName, actualLastName, "Last name mismatch")
+        );
+    }
+
+    //change first name 200
+    @Test
+    @Transactional
+    public void changeFirstName_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newFirstName = "Barak";
+
+        String jsonRequestPayload = "{\"firstName\":\""+newFirstName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isOk());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String actualFirstName = actualResultJsonNode.get("firstName").asText();
+        String actualLastName = actualResultJsonNode.get("lastName").asText();
+
+        // assert
+        assertAll("Custom row validations",
+                () -> assertEquals(newFirstName, actualFirstName, "First name mismatch"),
+                () -> assertEquals("Trump", actualLastName, "Last name mismatch")
+        );
+    }
+
+    //change last name 200
+    @Test
+    @Transactional
+    public void changeLastName_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newLastName = "Obama";
+
+        String jsonRequestPayload = "{\"lastName\":\""+newLastName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isOk());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String actualFirstName = actualResultJsonNode.get("firstName").asText();
+        String actualLastName = actualResultJsonNode.get("lastName").asText();
+
+        // assert
+        assertAll("Custom row validations",
+                () -> assertEquals("Donald", actualFirstName, "First name mismatch"),
+                () -> assertEquals(newLastName, actualLastName, "Last name mismatch")
+        );
+    }
+
+
+    //change first name with same first name Invalid Data provided.
+    @Test
+    @Transactional
+    public void changeFirstNameWithOldFirstName_thenExpect400() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newFirstName = "Donald";
+
+        String jsonRequestPayload = "{\"firstName\":\""+newFirstName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isBadRequest());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String message = actualResultJsonNode.get("message").asText();
+
+        // assert
+        assertEquals("Invalid Data provided.", message, "Message mismatch");
+    }
+
+    //change last name with same last name Invalid Data provided.
+    @Test
+    @Transactional
+    public void changeLastNameWithOldLastName_thenExpect400() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newLastName = "Trump";
+
+        String jsonRequestPayload = "{\"lastName\":\""+newLastName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isBadRequest());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String message = actualResultJsonNode.get("message").asText();
+
+        // assert
+        assertEquals("Invalid Data provided.", message, "Message mismatch");
+    }
+
+
+    //change first name and have last name the same as last name 200.
+    @Test
+    @Transactional
+    public void changeFirstNameAndHaveLastNameIsOld_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newFirstName = "Barak";
+        String oldLastName = "Trump";
+
+        String jsonRequestPayload = "{\"firstName\":\""+newFirstName+"\",\"lastName\":\""+oldLastName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isOk());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String actualFirstName = actualResultJsonNode.get("firstName").asText();
+        String actualLastName = actualResultJsonNode.get("lastName").asText();
+
+        // assert
+        assertAll("Custom row validations",
+                () -> assertEquals(newFirstName, actualFirstName, "First name mismatch"),
+                () -> assertEquals(oldLastName, actualLastName, "Last name mismatch")
+        );
+    }
+
+
+    //change last name and have first name the same as first name 200.
+    @Test
+    @Transactional
+    public void changeLastNameAndHaveFirstNameIsOld_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newFirstName = "Donald";
+        String oldLastName = "Obama";
+
+        String jsonRequestPayload = "{\"firstName\":\""+newFirstName+"\",\"lastName\":\""+oldLastName+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isOk());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String actualFirstName = actualResultJsonNode.get("firstName").asText();
+        String actualLastName = actualResultJsonNode.get("lastName").asText();
+
+        // assert
+        assertAll("Custom row validations",
+                () -> assertEquals(newFirstName, actualFirstName, "First name mismatch"),
+                () -> assertEquals(oldLastName, actualLastName, "Last name mismatch")
+        );
+    }
+
+    //change first name with blank
+    //change last name with blank
+    @Test
+    @Transactional
+    public void changeFirstAndLastNameWithBlank_thenExpect400() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newFirstName = " ";
+        String oldLastName = "  ";
+
+        String jsonRequestPayload = "{\"firstName\":\""+newFirstName+"\",\"lastName\":\""+oldLastName+"\"}";
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isBadRequest());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String message = actualResultJsonNode.get("message").asText();
+
+        // assert
+        assertEquals("Invalid Data provided.", message, "Message mismatch");
+    }
+
+    //change with no content Invalid input, at least one name must be provided.
+    @Test
+    @Transactional
+    public void changeFirstAndLastNameWithNoContent_thenExpect400() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        String jsonRequestPayload = "{}";
+
+        // make the request
+        MvcResult changeNamesResult = changeFirstNameAndLastName(jsonRequestPayload, jwtToken, status().isBadRequest());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String message = actualResultJsonNode.get("message").asText();
+
+        // assert
+        assertEquals("Invalid input, at least one name must be provided.", message, "Message mismatch");
+    }
+
+
+    //update email 200
+    @Test
+    @Transactional
+    public void changeEmail_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newEmail = "New_Email@gmail.com";
+
+        String jsonRequestPayload = "{\"email\":\""+newEmail+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeEmail(jsonRequestPayload, jwtToken, status().isOk());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        String actualFirstName = actualResultJsonNode.get("firstName").asText();
+        String actualLastName = actualResultJsonNode.get("lastName").asText();
+        String actualEmail = actualResultJsonNode.get("email").asText();
+
+        // assert
+        assertAll("Custom row validations",
+                () -> assertEquals("Donald", actualFirstName, "First name mismatch"),
+                () -> assertEquals("Trump", actualLastName, "Last name mismatch"),
+                () -> assertEquals(newEmail, actualEmail, "Email name mismatch")
+        );
+    }
+
+
+
+
+
+
+    //update email with an old email in the db 400
+    @Test
+    @Transactional
+    public void changeEmailWithOldEmail_thenExpect200() throws Exception {
+        // use the before user jwt to authenticate the request
+
+        //new password
+        String newEmail = "DonaldTrump@usa.com";
+
+        String jsonRequestPayload = "{\"email\":\""+newEmail+"\"}";
+
+
+        // make the request
+        MvcResult changeNamesResult = changeEmail(jsonRequestPayload, jwtToken, status().isBadRequest());
+
+        //convert result to jsonNode
+        String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+        JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+        assertEquals("Email already in use.", actualResultJsonNode.get("message").asText());
+
+    }
+
+
+//update email with an already existing email in the db 400
+@Test
+@Transactional
+public void changeEmailWithEmailAlreadyInUse_thenExpect200() throws Exception {
+    // use the before user jwt to authenticate the request
+    //create new user
+    //create user
+    var newUserDto = RegisterRequest.builder()
+            .firstName("Barak")
+            .lastName("Obama")
+            .email("BarakObama@usa.com")
+            .password("A(&*SDHY(A*QHWF")
+            .build();
+    MvcResult registerResult = createUser(newUserDto);
+
+    String obamaJwt = extractJwtToken(registerResult.getResponse().getContentAsString());
+
+    //new password
+    String newEmail = "DonaldTrump@usa.com";
+
+    String jsonRequestPayload = "{\"email\":\""+newEmail+"\"}";
+
+
+    // make the request
+    MvcResult changeNamesResult = changeEmail(jsonRequestPayload, obamaJwt, status().isBadRequest());
+
+    //convert result to jsonNode
+    String actualResult = changeNamesResult.getResponse().getContentAsString();
+
+    JsonNode actualResultJsonNode = convertFromStringToJson(actualResult);
+
+    assertEquals("Email already in use.", actualResultJsonNode.get("message").asText());
+
+}
+
+
+
+
+
 
 
 
@@ -1207,6 +2122,23 @@ public class ContactControllerTest {
                 .andExpect(expectedResult)
                 .andReturn(); // Get the result of the executed request
     }
+
+    public MvcResult deleteCustomRowsByContactId(String jwtToken, String contactId, ResultMatcher resultMatcher) throws Exception {
+        return mockMvc.perform(delete("/api/v1/custom-row/delete-custom-row-by-contact-id/" + contactId)
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(resultMatcher)
+                .andReturn(); // Get the result of the executed request
+    }
+
+    public MvcResult deleteCustomRowById(String jwtToken, String contactId, ResultMatcher resultMatcher) throws Exception {
+        return mockMvc.perform(delete("/api/v1/custom-row/delete-custom-row-by-id/" + contactId)
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(resultMatcher)
+                .andReturn(); // Get the result of the executed request
+    }
+
 
     //Creates a user saves them and then returns the result from the request to /api/v1/auth/register
     public MvcResult createUser(RegisterRequest user) throws Exception {
@@ -1267,10 +2199,48 @@ public class ContactControllerTest {
                 .andReturn(); // Get the result of the executed request
     }
 
-    public MvcResult authenticateRequest(String jsonPayload, String uri, ResultMatcher resultMatcher) throws Exception {
-        return mockMvc.perform(post(uri)
+    public MvcResult getUserInformation(String jwtToken) throws Exception{
+
+        return mockMvc.perform(get("/api/v1/user-profile/get-profile")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk())
+                .andReturn(); // Get the result of the executed request
+    }
+
+    public MvcResult changePassword(String jsonRequestPayload, String jwtToken, ResultMatcher resultMatcher) throws Exception{
+
+        return mockMvc.perform(patch("/api/v1/user-profile/change-password")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequestPayload))
+                .andExpect(resultMatcher)
+                .andReturn(); // Get the result of the executed request
+    }
+
+    public MvcResult changeFirstNameAndLastName(String jsonRequestPayload, String jwtToken, ResultMatcher resultMatcher) throws Exception{
+
+        return mockMvc.perform(patch("/api/v1/user-profile/update-user-names")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequestPayload))
+                .andExpect(resultMatcher)
+                .andReturn(); // Get the result of the executed request
+    }
+
+    public MvcResult changeEmail(String jsonRequestPayload, String jwtToken, ResultMatcher resultMatcher) throws Exception {
+        return mockMvc.perform(patch("/api/v1/user-profile/update-email")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequestPayload))
+                .andExpect(resultMatcher)
+                .andReturn(); // Get the result of the executed request
+    }
+    public MvcResult getAllCustomRowsForContactId(String jwtToken, String contactId, ResultMatcher resultMatcher) throws Exception {
+
+        return mockMvc.perform(get("/api/v1/custom-row/"+contactId+"/get-all-custom-rows")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(resultMatcher)
                 .andReturn(); // Get the result of the executed request
     }
@@ -1319,20 +2289,9 @@ public class ContactControllerTest {
                 "}";
     }
 
-    public String manageContactPayloadUpdateMissingInput(DtoContact dtoContact){
 
-        return "{}";
-    }
-    public String manageLoginData(String email, String password){
-        return "{\"email\": \""+email+"\", \"password\": \""+password+"\" }";
-    }
 
-    public RequestPostProcessor userAuth(User user) {
-        return mockHttpServletRequest -> {
-            Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            return mockHttpServletRequest;
-        };
-    }
+
+
 
 }
