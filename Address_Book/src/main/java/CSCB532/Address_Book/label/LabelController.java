@@ -1,5 +1,6 @@
 package CSCB532.Address_Book.label;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class LabelController {
 
     @PostMapping("/create-label")
     public ResponseEntity<DtoLabel> createLabel(
-            @RequestBody DtoLabel dtoLabel) {
+            @Valid @RequestBody DtoLabel dtoLabel) {
         return ResponseEntity.ok(labelService.createLabel(dtoLabel));
     }
 
@@ -39,7 +40,8 @@ public class LabelController {
     @DeleteMapping("/delete-label/{labelId}")
     public ResponseEntity<String> deleteLabel(@PathVariable Integer labelId) {
 
-        return ResponseEntity.ok(labelService.deleteLabelById(labelId));
+        labelService.deleteLabelById(labelId);
+        return ResponseEntity.noContent().build();
     }
 
 

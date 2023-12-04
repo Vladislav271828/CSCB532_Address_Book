@@ -212,7 +212,7 @@ public class ContactService {
                 .orElseThrow(() -> new LabelNotFoundException("Label with ID " + labelId + " not found."));
 
         // checks if the currently logged user is attempting to use a label that's not theirs
-        if (!authenticationService.getCurrentlyLoggedUser().getLabels().contains(label)) {
+        if (!authenticationService.getCurrentlyLoggedUser().getId().equals(label.getUser().getId())) {
             throw new BadRequestException("User doesn't have permissions to perform this action.");
         }
 

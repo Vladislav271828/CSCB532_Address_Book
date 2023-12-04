@@ -55,6 +55,7 @@ public class Contact {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "label_id")
     private Label label;

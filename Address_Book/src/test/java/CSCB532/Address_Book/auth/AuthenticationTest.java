@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @WithMockUser
 @ActiveProfiles("test")
-public class AuthenticationControllerTest {
+public class AuthenticationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,7 +43,7 @@ public class AuthenticationControllerTest {
 
         String jsonPayload = manageRegisterData(firstName, lastName, email, password);
 
-        MvcResult result = makePermitAllRequest(jsonPayload,registerUserUri, status().isOk());
+        MvcResult result = makePermitAllRequest(jsonPayload, registerUserUri, status().isOk());
         assertTrue(result.getResponse().getContentAsString().contains("token"));
     }
 
@@ -69,19 +69,18 @@ public class AuthenticationControllerTest {
         String lastName = "";
 
         String firstNameShort = "Me"; //2 characters long
-        String jsonPayloadRegister = manageRegisterData(firstNameShort, lastName, email , password);
+        String jsonPayloadRegister = manageRegisterData(firstNameShort, lastName, email, password);
 
         // Create a user
         MvcResult result = makePermitAllRequest(jsonPayloadRegister, registerUserUri, status().isBadRequest());
         assertTrue(result.getResponse().getContentAsString().contains("First name must be longer than 3 characters."));
 
         String firstNameLong = "Some Very Long First Name Shenanigans";//this is 38 characters
-        jsonPayloadRegister = manageRegisterData(firstNameLong, lastName, email , password);
+        jsonPayloadRegister = manageRegisterData(firstNameLong, lastName, email, password);
 
         // Create a user
         result = makePermitAllRequest(jsonPayloadRegister, registerUserUri, status().isBadRequest());
         assertTrue(result.getResponse().getContentAsString().contains("First name is too long, must be less than 18 characters."));
-
 
 
     }
@@ -107,7 +106,7 @@ public class AuthenticationControllerTest {
         MvcResult result = makePermitAllRequest(jsonPayload, registerUserUri, status().isBadRequest());
 
         // Check fo custom message
-        assertTrue(result.getResponse().getContentAsString().contains("User with email "+email+" already exists."));
+        assertTrue(result.getResponse().getContentAsString().contains("User with email " + email + " already exists."));
 
     }
 
@@ -125,7 +124,7 @@ public class AuthenticationControllerTest {
         String jsonPayload = manageRegisterData(firstName, lastName, email, password);
 
         // Act & Assert
-        MvcResult result = makePermitAllRequest(jsonPayload,registerUserUri, status().isBadRequest());
+        MvcResult result = makePermitAllRequest(jsonPayload, registerUserUri, status().isBadRequest());
 
         // Assert
         String actualResponseBody = result.getResponse().getContentAsString();
@@ -148,7 +147,7 @@ public class AuthenticationControllerTest {
         String jsonPayload = manageRegisterData(firstName, lastName, email, password);
 
         // Act & Assert
-        MvcResult result = makePermitAllRequest(jsonPayload,registerUserUri, status().isBadRequest());
+        MvcResult result = makePermitAllRequest(jsonPayload, registerUserUri, status().isBadRequest());
 
         // Check if the exception is of type MethodArgumentNotValidException
         Exception resolvedException = result.getResolvedException();
@@ -176,7 +175,7 @@ public class AuthenticationControllerTest {
         String jsonPayload = manageRegisterData(firstName, lastName, email, password);
 
         // Act & Assert
-        MvcResult result = makePermitAllRequest(jsonPayload,registerUserUri, status().isBadRequest());
+        MvcResult result = makePermitAllRequest(jsonPayload, registerUserUri, status().isBadRequest());
 
         // Check if the exception is of type MethodArgumentNotValidException
         Exception resolvedException = result.getResolvedException();
@@ -204,7 +203,7 @@ public class AuthenticationControllerTest {
         String jsonPayload = manageRegisterData(firstName, lastName, email, password);
 
         // Register user
-       makePermitAllRequest(jsonPayload,registerUserUri, status().isOk());
+        makePermitAllRequest(jsonPayload, registerUserUri, status().isOk());
 
         String jsonPayloadLogin = manageLoginData(email, password);
         // Authenticate the user
@@ -272,24 +271,6 @@ public class AuthenticationControllerTest {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public MvcResult makePermitAllRequest(String jsonPayload, String uri, ResultMatcher expectedResult) throws Exception {
 
         return mockMvc.perform(post(uri)
@@ -299,36 +280,25 @@ public class AuthenticationControllerTest {
                 .andReturn(); // Get the result of the executed request
     }
 
-    public MvcResult authenticateRequest(String jsonPayload, String uri, ResultMatcher resultMatcher) throws Exception {
-        return mockMvc.perform(post(uri)
+    public void authenticateRequest(String jsonPayload, String uri, ResultMatcher resultMatcher) throws Exception {
+        mockMvc.perform(post(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
-                .andExpect(resultMatcher)
-                .andReturn(); // Get the result of the executed request
+                .andExpect(resultMatcher); // Get the result of the executed request
     }
 
-    public String extractJwtToken(String responseContent){
-        // Find the start of the token
-        int tokenStart = responseContent.indexOf("\"token\":\"") + 9; // 9 is the length of "\"token\":\""
 
-        // Find the end of the token
-        int tokenEnd = responseContent.indexOf("\"", tokenStart);
-
-        // Extract the token
-        return responseContent.substring(tokenStart, tokenEnd);
-    }
-
-    public String manageRegisterData(String firstName, String lastName, String email, String password){
-        return  "{" +
-                "\"firstName\" : \""+ firstName +"\", " +
-                "\"lastName\" : \""+lastName+"\", " +
-                "\"email\": \""+email+"\", " +
-                "\"password\": \""+password+"\" " +
+    public String manageRegisterData(String firstName, String lastName, String email, String password) {
+        return "{" +
+                "\"firstName\" : \"" + firstName + "\", " +
+                "\"lastName\" : \"" + lastName + "\", " +
+                "\"email\": \"" + email + "\", " +
+                "\"password\": \"" + password + "\" " +
                 "}";
     }
 
-    public String manageLoginData(String email, String password){
-        return "{\"email\": \""+email+"\", \"password\": \""+password+"\" }";
+    public String manageLoginData(String email, String password) {
+        return "{\"email\": \"" + email + "\", \"password\": \"" + password + "\" }";
     }
 
 }
