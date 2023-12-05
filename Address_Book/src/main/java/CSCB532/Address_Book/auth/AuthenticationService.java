@@ -113,6 +113,40 @@ public class AuthenticationService {
     }
 
 
+    public String createAdmin(RegisterRequest request) {//TODO strictly for test
+
+        //Check if incoming data is valid
+        if (checkUserDto(request)){//checks if fields are invalid
+            throw new BadRequestException("Invalid Request: ".concat(errorMessage(request)));//the errorMessage method will get the names of the invalid fields. I.e. email, password. And their values - though for the moment the values are going to be empty strings
+        }
+
+
+        //Check if new user is unique
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("User with email ".concat(request.getEmail()).concat(" already exists."));
+        }
+
+        //create user with request data
+        var user = User.builder()
+                .firstname(request.getFirstName())
+                .lastname(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.ADMIN)
+                .verified(false)//sets the initial status of the user as not verified basically
+                .contacts(new ArrayList<>())
+                .labels(new ArrayList<>())
+                .tokens(new ArrayList<>())
+                .build();
+
+        var savedUser = repository.save(user); //save user in the db
+        //TODO uncomment this after merge
+        var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
+
+        saveUserToken(savedUser, jwtToken);
+        return jwtToken;
+    }
+
     private void revokeAllUserTokens(User user) {
         var validUserTokens = tokenRepository.findAllValidTokensByUser(user.getId());
         if (validUserTokens.isEmpty()) {
