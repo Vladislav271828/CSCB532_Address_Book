@@ -1,5 +1,6 @@
 package CSCB532.Address_Book.customRow;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class CustomRowController {
 
     @PostMapping("/create-custom-row")
     public ResponseEntity<DtoCustomRow> createCustomRow(
-            @RequestBody DtoCustomRow dtoCustomRow) {
+            @Valid @RequestBody DtoCustomRow dtoCustomRow) {
         return ResponseEntity.ok(customRowService.createCustomRow(dtoCustomRow));
     }
 

@@ -1,18 +1,14 @@
 package CSCB532.Address_Book.user;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
-import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-import static CSCB532.Address_Book.util.DtoValidationUtil.*;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -90,6 +86,13 @@ public class UserService {
     public DtoUserResponse updateEmail(DtoEmailRequest dtoEmailRequest) {
         User currentUser = authenticationService.getCurrentlyLoggedUser();
 
+        //check if the email the user is trying to update with is already in db
+        boolean isEmailTaken = isEmailTaken(dtoEmailRequest.getEmail());
+
+        if (isEmailTaken){
+            throw new BadRequestException("Email already in use.");
+        }
+
         if (currentUser.getEmail().equals(dtoEmailRequest.getEmail())){
             throw new BadRequestException("Invalid input.");
         }
@@ -101,5 +104,11 @@ public class UserService {
         // Map to DTO and return the response
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(currentUser, DtoUserResponse.class);
+    }
+
+
+    public boolean isEmailTaken(String email){
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.isPresent();
     }
 }

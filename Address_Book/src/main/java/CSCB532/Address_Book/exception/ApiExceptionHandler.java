@@ -83,7 +83,15 @@ public class ApiExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception exc){
         logger.error("General Exception occurred: {}", exc.getMessage());
-        return buildErrorResponse(exc, HttpStatus.INTERNAL_SERVER_ERROR);
+        String targetSubstring = "Required request body is missing";
+
+// Check if the message contains the target substring
+        if (exc.getMessage().contains(targetSubstring)) {
+            return buildErrorResponse(new Exception(targetSubstring), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } else {
+            return buildErrorResponse(exc, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @ExceptionHandler(NoSuchElementException.class)

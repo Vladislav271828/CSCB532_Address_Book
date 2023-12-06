@@ -2,6 +2,7 @@ package CSCB532.Address_Book.label;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
 import CSCB532.Address_Book.exception.BadRequestException;
+import CSCB532.Address_Book.exception.CustomRowNotFoundException;
 import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.LabelNotFoundException;
 import CSCB532.Address_Book.user.User;
@@ -9,8 +10,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -25,18 +29,45 @@ public class LabelService {
     }
 
     public DtoLabel createLabel(DtoLabel dtoLabel) {
-        // Validation
-        if (dtoLabel.getName() == null || dtoLabel.getColor() == null) {
-            throw new BadRequestException("Missing input.");
+        // Validate the RGB color format
+        String color = dtoLabel.getColorRGB();
+        String rgbPattern = "^(\\d{1,3})(?:,\\s*|\\s+)(\\d{1,3})(?:,\\s*|\\s+)(\\d{1,3})$";
+        Pattern pattern = Pattern.compile(rgbPattern);
+        Matcher matcher = pattern.matcher(color);
+
+        if (!matcher.matches()) {
+            throw new BadRequestException("Invalid RGB format");
         }
+
+        // Ensure each RGB component is within the range 0-255
+        for (int i = 1; i <= matcher.groupCount(); i++) {
+            int value;
+            try {
+                value = Integer.parseInt(matcher.group(i));
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("RGB component is not a valid integer");
+            }
+            if (value < 0 || value > 255) {
+                throw new BadRequestException("RGB value out of range: " + value);
+            }
+        }
+
 
         // Retrieve currently logged user
         User user = authenticationService.getCurrentlyLoggedUser();
+
+        boolean isNameAlreadyInUseByLoggedUser = labelRepository.existsByNameAndUserId(dtoLabel.getName(), user.getId());
+
+        if (isNameAlreadyInUseByLoggedUser){
+            throw new BadRequestException("The label name " + dtoLabel.getName() + " is already in use.");
+        }
 
         // Map DTO to entity
         ModelMapper modelMapper = new ModelMapper();
         Label label = modelMapper.map(dtoLabel, Label.class);
         label.setUser(user);
+        label.setId(null);
+        label.setContacts(new ArrayList<>());
 
         // Save the label
         try {
@@ -53,14 +84,46 @@ public class LabelService {
     }
 
     public DtoLabel updateLabel(Integer labelId, DtoLabel dtoLabel) {
+        if (dtoLabel.getId()!=null){
+            dtoLabel.setId(null);
+        }
         // Validate input
-        if (dtoLabel == null || labelId == null) {
-            throw new BadRequestException("Label ID or update information cannot be null.");
+        Label existingLabel = labelRepository.findById(labelId)
+                .orElseThrow(() -> new CustomRowNotFoundException("Label not found for ID: " + labelId));
+
+        boolean isNameBlank = false;
+        if (dtoLabel.getName() != null){
+            if (dtoLabel.getName().isBlank()){
+                isNameBlank = true;
+//                throw new BadRequestException("Field Name can't be blank.");
+            }
+            if (existingLabel.getName().equals(dtoLabel.getName())){
+                dtoLabel.setName(null);
+//                throw new BadRequestException("Field Name can't be the same.");
+            }else if(isNameBlank){
+                dtoLabel.setName(null);
+            }
         }
 
-        if (dtoLabel.getName() == null && dtoLabel.getColor() == null) {
-            throw new BadRequestException("Missing input.");
+        boolean isColorRgbBlank = false;
+        if ( dtoLabel.getColorRGB() != null){
+            if (dtoLabel.getColorRGB().isBlank()){
+                isColorRgbBlank = true;
+//                throw new BadRequestException("Custom Name can't be empty.");
+            }
+            if (existingLabel.getColorRGB().equals(dtoLabel.getColorRGB())){
+                dtoLabel.setColorRGB(null);
+//                    throw new BadRequestException("Custom Name can't be the same.");
+            }else if(isColorRgbBlank){
+                dtoLabel.setColorRGB(null);
+            }
         }
+
+        if (dtoLabel.getName() == null && dtoLabel.getColorRGB() == null){
+            throw new BadRequestException("Incorrect request body");
+        }
+
+
 
         //checks if the currently logged user is attempting to update a label that's not theirs
         validateUserPermission(labelId);
@@ -98,7 +161,7 @@ public class LabelService {
                 .collect(Collectors.toList());
     }
 
-    public String deleteLabelById(Integer labelId) {
+    public void deleteLabelById(Integer labelId) {
         // Validate input
         if (labelId == null || labelId < 0) {
             throw new BadRequestException("Label ID must be a positive integer.");
@@ -116,7 +179,6 @@ public class LabelService {
             throw new DatabaseException("Couldn't delete label with id " + labelId, e.getCause());
         }
 
-        return "Label with id " + label.getId() + " deleted successfully";
     }
 
     private void validateUserPermission(Integer labelId) {

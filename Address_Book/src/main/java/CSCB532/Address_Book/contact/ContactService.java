@@ -3,8 +3,8 @@ package CSCB532.Address_Book.contact;
 import CSCB532.Address_Book.auth.AuthenticationService;
 import CSCB532.Address_Book.customRow.DtoCustomRow;
 import CSCB532.Address_Book.exception.BadRequestException;
-import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.ContactNotFoundException;
+import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.LabelNotFoundException;
 import CSCB532.Address_Book.label.Label;
 import CSCB532.Address_Book.label.LabelRepository;
@@ -55,10 +55,6 @@ public class ContactService {
      * @throws DatabaseException   if there is an issue with saving the contact or mapping the result
      */
     public DtoContact createContact(DtoContact dtoContact) {
-        // Validation
-        if (dtoContact.getPhoneNumber() == null || dtoContact.getPhoneNumber().trim().isEmpty()) {
-            throw new BadRequestException("Invalid data provided (missing or empty phone number)");
-        }
 
         // Retrieve currently logged user
         User user = authenticationService.getCurrentlyLoggedUser();
@@ -163,7 +159,7 @@ public class ContactService {
      * @throws ContactNotFoundException if no contact with the specified ID is found.
      * @throws DatabaseException       if there is an issue with the database operation.
      */
-    public String deleteContactById(Integer contactId) {
+    public void deleteContactById(Integer contactId) {
         // Validate input
         if (contactId == null || contactId < 0) {
             throw new BadRequestException("Contact ID must be a positive integer.");
@@ -180,8 +176,6 @@ public class ContactService {
         } catch (DataAccessException e) {
             throw new DatabaseException("Couldn't delete contact with id " + contactId, e.getCause());
         }
-
-        return "Contact with id " + contact.getId() + " deleted successfully";
     }
 
     private void validateUserPermission(Integer contactId) {
@@ -218,7 +212,7 @@ public class ContactService {
                 .orElseThrow(() -> new LabelNotFoundException("Label with ID " + labelId + " not found."));
 
         // checks if the currently logged user is attempting to use a label that's not theirs
-        if (!authenticationService.getCurrentlyLoggedUser().getLabels().contains(label)) {
+        if (!authenticationService.getCurrentlyLoggedUser().getId().equals(label.getUser().getId())) {
             throw new BadRequestException("User doesn't have permissions to perform this action.");
         }
 

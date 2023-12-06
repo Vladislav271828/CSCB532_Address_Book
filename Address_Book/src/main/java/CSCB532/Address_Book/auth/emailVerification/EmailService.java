@@ -4,10 +4,14 @@ import CSCB532.Address_Book.auth.AuthenticationService;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.user.User;
 import CSCB532.Address_Book.user.UserRepository;
-import com.sendgrid.*;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +27,7 @@ public class EmailService {
     private final UserRepository userRepository;
     private final String sendGridApiKey;
     private final AuthenticationService authenticationService;
-
+    @Autowired
     public EmailService(VerificationRepository verificationRepository, UserRepository userRepository, @Value("${spring.mail.sendgrid.api-key}") String sendGridApiKey, AuthenticationService authenticationService) {
         this.verificationRepository = verificationRepository;
         this.userRepository = userRepository;

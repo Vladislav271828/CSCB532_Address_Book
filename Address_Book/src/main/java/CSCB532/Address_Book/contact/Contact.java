@@ -55,11 +55,13 @@ public class Contact {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "label_id")
     private Label label;
 
-    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
     private List<CustomRow> customRows;
 
     @Override
@@ -76,7 +78,7 @@ public class Contact {
                 ", mobileNumber='" + mobileNumber + '\'' +
                 ", comment='" + comment + '\'' +
                 //", user=" + user +
-                ", customRows=" + customRows +
+//                ", customRows=" + customRows +
                 '}';
     }
 }

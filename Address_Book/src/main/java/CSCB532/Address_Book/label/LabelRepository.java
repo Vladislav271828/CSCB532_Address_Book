@@ -7,4 +7,7 @@ import java.util.List;
 public interface LabelRepository extends JpaRepository<Label, Integer> {
 
     List<Label> findAllByUserId(Integer id);
+
+    boolean existsByNameAndUserId(String labelName, Integer userId);
+
 }
