@@ -4,7 +4,7 @@ import axios from '../../API/axios'
 import { Link, useNavigate } from "react-router-dom"
 import AuthContext from "../../Context/AuthProvider";
 
-const AUTH_URL = '/api/v1/auth/authenticate'
+const AUTH_URL = '/auth/authenticate'
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ function Login() {
             )
             setEmail('');
             setPwd('');
-            setAuth(response.data.token)
+            setAuth(response.data.token);
             navigate("/");
         } catch (err) {
             if (!err?.response) {

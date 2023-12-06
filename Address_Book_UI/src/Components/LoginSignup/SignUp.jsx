@@ -3,42 +3,48 @@ import { useState } from "react";
 import axios from '../../API/axios'
 import { Link } from "react-router-dom"
 
-const REGISTER_URL = '/api/v1/auth/register'
+const REGISTER_URL = '/auth/register'
 
 function SignUp() {
     const [firstName, setFN] = useState('');
     const [lastName, setLN] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPwd] = useState('');
+    const [matchPwd, setMatchPwd] = useState('');
 
     const [errMsg, setErrMsg] = useState('');
     const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const response = await axios.post(REGISTER_URL,
-                JSON.stringify({ firstName, lastName, email, password }),
-                {
-                    headers: { 'Content-Type': 'application/json' },
-                }
-            )
-            setSuccess(true);
-            setErrMsg('We have sent a verification link to ' + email);
-            setEmail('');
-            setFN('');
-            setLN('');
-            setPwd('');
-        } catch (err) {
+        if (matchPwd != password) {
             setSuccess(false);
-            if (!err?.response) {
-                setErrMsg('Unable to connect to server.');
-            }
-            else {
-                setErrMsg(err.response.data.message);
+            setErrMsg('Passwords don\'t match.');
+        }
+        else {
+            try {
+                const response = await axios.post(REGISTER_URL,
+                    JSON.stringify({ firstName, lastName, email, password }),
+                    {
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                )
+                setSuccess(true);
+                setErrMsg('We have sent a verification link to ' + email);
+                setEmail('');
+                setFN('');
+                setLN('');
+                setPwd('');
+            } catch (err) {
+                setSuccess(false);
+                if (!err?.response) {
+                    setErrMsg('Unable to connect to server.');
+                }
+                else {
+                    setErrMsg(err.response.data.message);
+                }
             }
         }
-
     }
 
     return (
@@ -76,6 +82,14 @@ function SignUp() {
                     id="password"
                     required
                     onChange={(e) => setPwd(e.target.value)}
+                    onFocus={() => setErrMsg('')}
+                />
+                <input
+                    type="password"
+                    placeholder='Confirm Password'
+                    id="password-match"
+                    required
+                    onChange={(e) => setMatchPwd(e.target.value)}
                     onFocus={() => setErrMsg('')}
                 />
 
