@@ -61,7 +61,7 @@ public class Contact {
     private Label label;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
     private List<CustomRow> customRows;
 
     @Override

@@ -24,7 +24,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -2969,6 +2971,179 @@ public class RequestsTests {
 
     //http://localhost:8080/api/v1/admin/search-contact-as-admin -> get all by query
     //
+    @Test
+    @Transactional
+    public void getAllContactsViaContactNameAsAdmin_thenExpect200() throws Exception {
+
+        //create Donald's first contact
+        // Donald creates a contact
+        var contactDtoDonald1 = DtoContact.builder()
+                .name("Barak")
+                .lastName("Obama")
+                .phoneNumber("0574965222")
+                .nameOfCompany("Obama Care")
+                .address("The White House")
+                .email("ObamaCaresForYou@usa.com")
+                .fax("+1-907-555-1234")
+                .mobileNumber("0574965333")
+                .comment("I love this guy.. Obviously.")
+                .build();
+
+
+        String contactJsonPayloadDonald1 = convertFromObjectToJson(contactDtoDonald1).toString();
+        //create request
+        MvcResult createContactResultDonald1 = createContact(contactJsonPayloadDonald1, jwtToken, status().isOk());
+
+        JsonNode createContactResultDonald1JsonNode = convertFromStringToJson(createContactResultDonald1.getResponse().getContentAsString());
+
+        //needed later for assertion
+        String donaldContactId1 = createContactResultDonald1JsonNode.get("id").asText();
+
+
+
+
+        // Donald creates second a contact
+        var contactDtoDonald2 = DtoContact.builder()
+                .name("TestDonald")
+                .lastName("Obama")
+                .phoneNumber("0574965222")
+                .nameOfCompany("Obama Care")
+                .address("The White House")
+                .email("ObamaCaresForYou@usa.com")
+                .fax("+1-907-555-1234")
+                .mobileNumber("0574965333")
+                .comment("I love this guy.. Obviously.")
+                .build();
+
+
+        String contactJsonPayloadDonald2 = convertFromObjectToJson(contactDtoDonald2).toString();
+        //create request
+        MvcResult createContactResultDonald2 = createContact(contactJsonPayloadDonald2, jwtToken, status().isOk());
+
+        JsonNode createContactResultDonald2JsonNode = convertFromStringToJson(createContactResultDonald2.getResponse().getContentAsString());
+
+        //needed later for assertion
+        String donaldContactId2 = createContactResultDonald2JsonNode.get("id").asText();
+
+
+
+        //create user 2
+        //create Obama
+        var newUserDto = RegisterRequest.builder()
+                .firstName("Barak")
+                .lastName("Obama")
+                .email("BarakObama@usa.com")
+                .password("A(&*SHY(A*HWPF")
+                .build();
+        MvcResult registerResult = createUser(newUserDto);
+
+        String obamaJwt = extractJwtToken(registerResult.getResponse().getContentAsString());
+
+
+
+        //create contact for Obama
+        var contactDtoObama1 = DtoContact.builder()
+                .name("Test")
+                .lastName("Trump")
+                .phoneNumber("0574965222")
+                .nameOfCompany("Donald Doesn't Care")
+                .address("The Orange House")
+                .email("DonaldDoesntForYou@usa.com")
+                .fax("+1-907-555-1234")
+                .mobileNumber("0574965333")
+                .comment("I might love this guy if he wasn't orange.")
+                .build();
+
+        String contactJsonPayloadObama1 = convertFromObjectToJson(contactDtoObama1).toString();
+        //create contact request
+        MvcResult createContactResultObama1 = createContact(contactJsonPayloadObama1, obamaJwt, status().isOk());
+
+        JsonNode createContactResultObama1JsonNode = convertFromStringToJson(createContactResultObama1.getResponse().getContentAsString());
+
+        //needed later for assertion
+        String obamaContactId1 = createContactResultObama1JsonNode.get("id").asText();
+
+
+
+        //create second contact for Obama
+        var contactDtoObama2 = DtoContact.builder()
+                .name("TestObama")
+                .lastName("Trump")
+                .phoneNumber("0574965222")
+                .nameOfCompany("Donald Doesn't Care")
+                .address("The Orange House")
+                .email("DonaldDoesntForYou@usa.com")
+                .fax("+1-907-555-1234")
+                .mobileNumber("0574965333")
+                .comment("I might love this guy if he wasn't orange.")
+                .build();
+
+        String contactJsonPayloadObama2 = convertFromObjectToJson(contactDtoObama2).toString();
+        //create contact request
+        MvcResult createContactResultObama2 = createContact(contactJsonPayloadObama2, obamaJwt, status().isOk());
+
+        JsonNode createContactResultObama2JsonNode = convertFromStringToJson(createContactResultObama2.getResponse().getContentAsString());
+
+        //needed later for assertion
+        String obamaContactId2 = createContactResultObama2JsonNode.get("id").asText();
+
+
+
+
+
+        //create admin
+        RegisterRequest adminUser = new RegisterRequest("ADMIN", "ADMIN", "ADMIN@GMAIL@COM", "ADMIN!123");
+        String adminJwt = authenticationService.createAdmin(adminUser);
+
+
+        String testName = "Test";
+        String getAllContactsViaNameJsonPayload = "{\"name\":\""+testName+"\"}";
+
+        //make a get all request with the admin jwt token
+        MvcResult actualGetAllContactsResult = getAllContactsViaNameQuery(getAllContactsViaNameJsonPayload, adminJwt, status().isOk());
+
+        // Convert the response content to JsonNode
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayNode contactsArray = (ArrayNode) objectMapper.readTree(actualGetAllContactsResult.getResponse().getContentAsString());
+
+        // Get the list of IDs from the JSON array
+        List<Integer> contactIds = StreamSupport.stream(contactsArray.spliterator(), false)
+                .map(jsonNode -> jsonNode.get("id").asInt())
+                .toList();
+
+
+        // Check if the list contains all your expected IDs
+        boolean allIdsPresent = contactIds.containsAll(Arrays.asList(Integer.parseInt(obamaContactId1)));
+
+
+        // Assert that all IDs are present
+        assertTrue(allIdsPresent);
+
+
+        testName = "TestObama";
+        getAllContactsViaNameJsonPayload = "{\"name\":\""+testName+"\"}";
+
+        //make a get all request with the admin jwt token
+        actualGetAllContactsResult = getAllContactsViaNameQuery(getAllContactsViaNameJsonPayload, adminJwt, status().isOk());
+
+        // Convert the response content to JsonNode
+        contactsArray = (ArrayNode) objectMapper.readTree(actualGetAllContactsResult.getResponse().getContentAsString());
+
+        // Get the list of IDs from the JSON array
+        List<Integer> contactIds2 = StreamSupport.stream(contactsArray.spliterator(), false)
+                .map(jsonNode -> jsonNode.get("id").asInt())
+                .toList();
+
+
+        // Check if the list contains all your expected IDs
+        allIdsPresent = contactIds2.containsAll(List.of(Integer.parseInt(obamaContactId2)));
+
+
+        // Assert that all IDs are present
+        assertTrue(allIdsPresent);
+
+
+    }
 
 
 
@@ -2982,7 +3157,14 @@ public class RequestsTests {
 
 
 
-
+    public MvcResult getAllContactsViaNameQuery(String jsonPayload, String jwtToken, ResultMatcher resultMatcher) throws Exception {
+        return mockMvc.perform(get("/api/v1/admin/search-contact-as-admin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload)
+                .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(resultMatcher)
+                .andReturn(); // Get the result of the executed request
+    }
 
     public MvcResult getAllContactsAdmin(String jwtToken, ResultMatcher resultMatcher) throws Exception {
         return mockMvc.perform(get("/api/v1/admin/get-all-contacts-as-admin")
