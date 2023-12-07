@@ -1,5 +1,6 @@
+import './Contacts.css'
 import { useState, useEffect, useContext } from "react";
-import SearchContact from "./SearchContact";
+import SearchBar from "../SearchBar";
 import axios from "../../API/axios";
 import AuthContext from "../../Context/AuthProvider";
 import ContactsList from "./ContactsList";
@@ -42,7 +43,6 @@ function Contacts() {
                 setContacts(response.data);
                 setFetchErr(null);
                 setIsLoading(false);
-                console.log(response.data)
             } catch (err) {
                 if (!err?.response) {
                     setFetchErr('Unable to connect to server.');
@@ -58,15 +58,20 @@ function Contacts() {
     }, [])
 
     return (
-        <>
-            <h2>Hello {userNames}</h2>
-            <SearchContact
-                search={search}
-                setSearch={setSearch}
-            />
-            <div>
+        <div className="contacts-container">
+            <h2 className='contacts-greeting'>Hello {userNames}</h2>
+            <div className='contacts-search-container'>
+                <SearchBar
+                    search={search}
+                    setSearch={setSearch}
+                    placeholder="Search Contacts"
+                />
+                <button className='add-button'>+</button>
+            </div>
+            <hr />
+            <div className='contact-list-container'>
                 {isLoading && <p>Fetching contacts, please wait.</p>}
-                {fetchError && <p>{fetchError}</p>}
+                {fetchError && <p style={{ color: "red" }}>{fetchError}</p>}
                 {!fetchError && !isLoading &&
                     contacts.length ? (
                     <ContactsList
@@ -78,7 +83,7 @@ function Contacts() {
                     <p>Your address book is empty.</p>
                 )}
             </div>
-        </>
+        </div>
     )
 }
 

@@ -1,11 +1,11 @@
-const SearchContact = ({ search, setSearch }) => {
+const SearchBar = ({ search, setSearch, placeholder }) => {
     return (
-        <form className='searchForm' onSubmit={(e) => e.preventDefault()}>
+        <form className='search-form' onSubmit={(e) => e.preventDefault()}>
             <input
                 id='search'
                 type='text'
                 role='searchbox'
-                placeholder='Search Contacts'
+                placeholder={placeholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
             />
@@ -13,4 +13,4 @@ const SearchContact = ({ search, setSearch }) => {
     )
 }
 
-export default SearchContact
+export default SearchBar
