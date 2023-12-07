@@ -3,7 +3,7 @@ const ContactsList = ({ contacts }) => {
         <>
             {contacts.map((item) => (
                 <div className="contact" key={item.id}>
-                    <p>{item.name} {item.lastName}</p>
+                    <p style={{ fontWeight: "600" }}>{item.name} {item.lastName}</p>
                     <p>{item.phoneNumber}</p>
                 </div>
             ))}

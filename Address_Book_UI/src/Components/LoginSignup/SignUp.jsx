@@ -101,7 +101,7 @@ function SignUp() {
                     </Link>
                 </p>
                 <button
-                    className="submit-btn"
+                    className="big-btn"
                     tabIndex={0}
                     type='submit'>
                     Sign Up

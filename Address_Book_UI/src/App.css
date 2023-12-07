@@ -47,7 +47,20 @@ p {
   color: #464646;
 }
 
-hr {
+.big-btn {
+  background-color: #464646;
+  color: white;
+  border: none;
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
+  cursor: pointer;
   width: 100%;
-  margin-top: 20px;
+  font-size: 1.1rem;
+  padding: 1.3rem;
+  margin: 0;
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+}
+
+.big-btn:hover {
+  background-color: #646464;
 }

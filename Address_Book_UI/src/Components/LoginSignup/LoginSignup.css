@@ -21,7 +21,6 @@
 .login-form-header {
     margin: 30px 0px 20px 0px;
     font-size: 32px;
-    font-weight: 700;
     color: #464646;
     font-weight: 800;
 }
@@ -48,22 +47,4 @@ input {
     margin: auto;
     padding-bottom: 20px;
     width: 70%;
-}
-
-.submit-btn {
-    background-color: #464646;
-    color: white;
-    border: none;
-    border-top-right-radius: 0px;
-    border-top-left-radius: 0px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1.1rem;
-    padding: 1.3rem;
-    margin: 0;
-    font-family: 'Montserrat', 'Open Sans', sans-serif;
-}
-
-.submit-btn:hover {
-    background-color: #646464;
 }

@@ -4,6 +4,7 @@ import SearchBar from "../SearchBar";
 import axios from "../../API/axios";
 import AuthContext from "../../Context/AuthProvider";
 import ContactsList from "./ContactsList";
+import gear from "./gear400.png";
 
 const FETCH_USER_URL = '/user-profile/get-profile'
 const FETCH_CONTACTS_URL = '/contact/get-all-contacts'
@@ -59,16 +60,25 @@ function Contacts() {
 
     return (
         <div className="contacts-container">
-            <h2 className='contacts-greeting'>Hello {userNames}</h2>
+            <h2 className='contacts-greeting'>
+                Hello <p
+                    style={{ display: "inline", fontWeight: "800" }}>
+                    {userNames}
+                </p>
+            </h2>
             <div className='contacts-search-container'>
                 <SearchBar
                     search={search}
                     setSearch={setSearch}
                     placeholder="Search Contacts"
                 />
-                <button className='add-button'>+</button>
+                <button className='gear-button'>
+                    <img src={gear}
+                        alt="Settings"
+                        style={{ width: "1.5rem" }} />
+                </button>
             </div>
-            <hr />
+            <hr style={{ marginTop: "20px" }} />
             <div className='contact-list-container'>
                 {isLoading && <p>Fetching contacts, please wait.</p>}
                 {fetchError && <p style={{ color: "red" }}>{fetchError}</p>}
@@ -83,6 +93,7 @@ function Contacts() {
                     <p>Your address book is empty.</p>
                 )}
             </div>
+            <button className="big-btn new-contacts-btn">Create Contact</button>
         </div>
     )
 }
