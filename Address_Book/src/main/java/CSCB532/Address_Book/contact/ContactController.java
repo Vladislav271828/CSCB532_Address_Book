@@ -65,6 +65,14 @@ public class ContactController {
 
     }
 
+    @PatchMapping("{contactId}/remove-label")
+    public ResponseEntity<DtoContact> RemoveLabelFromContact(
+            @PathVariable Integer contactId) {
+        contactService.RemoveLabelFromContact(contactId);
+        return ResponseEntity.noContent().build();
+
+    }
+
     @GetMapping("/export/csv")
     public ResponseEntity<String> exportAllContactsToCSV() {
         String csvContent = contactService.exportAllContactsToCSV();

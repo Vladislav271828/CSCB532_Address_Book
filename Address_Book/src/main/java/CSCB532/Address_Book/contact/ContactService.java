@@ -231,6 +231,25 @@ public class ContactService {
         }
     }
 
+    @Transactional
+    public void RemoveLabelFromContact(Integer contactId) {
+        //checks if the currently logged user is attempting to update a contact that's not theirs
+        validateUserPermission(contactId);
+
+        // Find the existing contact
+        Contact contact = contactRepository.findById(contactId)
+                .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
+        if (contact.getLabel() == null) throw new LabelNotFoundException("Contact doesn't have a label to remove");
+
+        Label label = contact.getLabel();
+
+        // Save the updated contact
+        contact.setLabel(null);
+        label.getContacts().remove(contact);
+        contactRepository.save(contact);
+        labelRepository.save(label);
+    }
+
     public String exportAllContactsToCSV() {
         List<DtoContact> allContacts = getAllContactsForLoggedInUser();
 
