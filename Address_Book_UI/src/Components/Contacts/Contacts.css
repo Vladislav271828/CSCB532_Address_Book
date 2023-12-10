@@ -1,0 +1,66 @@
+.contacts-search-container {
+    width: 100%;
+    display: flex;
+    padding: 0px 30px;
+}
+
+.main-container .search-form {
+    width: 100%;
+    margin-right: 10px;
+}
+
+.contacts-search-container .search-form input {
+    width: 100%;
+    margin: 0;
+}
+
+.user-button {
+    height: 50px;
+    min-width: 50px;
+    line-height: 0;
+    border: none;
+    border-radius: 6px;
+    color: #464646;
+    background-color: #eaeaea;
+    cursor: pointer;
+}
+
+.user-button:hover {
+    outline: 2px solid #464646;
+}
+
+.contact-list-container {
+    padding-bottom: 3.7rem;
+}
+
+.contact-list-container>p {
+    margin: 5vh;
+}
+
+.contact {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 25px 20px 35px;
+}
+
+.contact p {
+    margin-right: 1rem;
+}
+
+.contact:hover {
+    background-color: #eaeaea;
+    cursor: pointer;
+}
+
+hr {
+    width: 100%;
+    border-top: 1px solid #464646;
+}
+
+.new-contacts-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}

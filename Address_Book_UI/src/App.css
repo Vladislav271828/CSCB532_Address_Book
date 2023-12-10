@@ -46,3 +46,40 @@ span {
 p {
   color: #464646;
 }
+
+.big-btn {
+  background-color: #464646;
+  color: white;
+  border: none;
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 1.3rem;
+  margin: 0;
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+}
+
+.big-btn:hover {
+  background-color: #646464;
+}
+
+.main-container {
+  background-color: #ffffff;
+  border-radius: 25px;
+  width: 600px;
+  overflow: hidden;
+  max-width: 100vw;
+  min-height: 84vh;
+  border: 2px solid #464646;
+  animation: fade-in-up 1s;
+  animation-timing-function: ease;
+  position: relative;
+}
+
+.main-header {
+  color: #464646;
+  margin: 20px 30px 5px 30px;
+  text-align: left;
+}
