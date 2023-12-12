@@ -16,7 +16,7 @@ function FourOhFour() {
             <p style={{
                 maxWidth: "600px"
             }}>The page you are looking for is not available. <Link
-                to="/">
+                to="/" replace>
                     <span>Click here</span>
                 </Link> to go back to the home page.</p>
         </div >

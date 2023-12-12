@@ -78,8 +78,9 @@ p {
   position: relative;
 }
 
-.main-header {
+.main-header-text {
   color: #464646;
-  margin: 20px 30px 5px 30px;
+  margin: 25px 10px 5px 30px;
   text-align: left;
+  line-height: 1;
 }

@@ -27,7 +27,6 @@ function Contacts() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        console.log(contacts);
         const fetchUser = async () => {
             try {
                 const response = await axios.get(FETCH_USER_URL, {
@@ -40,7 +39,7 @@ function Contacts() {
                     console.log('fetchUser: Unable to connect to server.');
                 }
                 else {
-                    console.log(err.response.data.message);
+                    console.log("fetchUser: " + err.response.data.message);
                 }
             }
         }
@@ -64,7 +63,7 @@ function Contacts() {
                 if (!err?.response) {
                     setFetchErr('Unable to connect to server.');
                 }
-                else if (err.response.status == 403) {
+                else if (err.response.status == 401) {
                     alert("Token expired, please login again.");
                     location.reload();
                 }
@@ -102,7 +101,7 @@ function Contacts() {
 
     return (
         <div className="main-container">
-            <h2 className='main-header' style={{ fontWeight: "400" }}>
+            <h2 className='main-header-text' style={{ fontWeight: "400" }}>
                 Hello <p
                     style={{ display: "inline", fontWeight: "800" }}>
                     {userNames}
@@ -122,7 +121,7 @@ function Contacts() {
                     </button>
                 </Link>
             </div>
-            <hr style={{ marginTop: "20px" }} />
+            <hr style={{ marginTop: "25px" }} />
             <div className='contact-list-container'>
                 {isLoading && <p>Fetching contacts, please wait.</p>}
                 {fetchError && <p style={{ color: "red" }}>{fetchError}</p>}
