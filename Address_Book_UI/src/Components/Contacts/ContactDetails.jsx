@@ -67,7 +67,7 @@ function ContactDetails() {
                 />
 
                 {/* Custom Rows */}
-                {contact.customRows.map((row) => (
+                {contact.customRows?.map((row) => (
                     <ContactInfoField
                         labelName={row.customName}
                         labelContents={row.customField}
