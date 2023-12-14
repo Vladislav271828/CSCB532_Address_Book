@@ -47,6 +47,36 @@ p {
   color: #464646;
 }
 
+::placeholder {
+  color: #646464;
+  font-weight: 400;
+  font-family: 'Montserrat', sans-serif;
+  /* Firefox */
+  opacity: 1;
+}
+
+input:hover,
+input:focus,
+textarea:hover,
+textarea:focus {
+  outline: 2px solid #464646;
+}
+
+input,
+textarea {
+  width: 80%;
+  font-family: 'Montserrat', sans-serif;
+  height: 50px;
+  margin-bottom: 18px;
+  padding: 0px 5%;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #464646;
+  background-color: #eaeaea;
+}
+
 .big-btn {
   background-color: #464646;
   color: white;

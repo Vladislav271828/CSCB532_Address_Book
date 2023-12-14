@@ -22,6 +22,7 @@ function ContactEdit() {
     const [email, setEmail] = useState(contact.email)
     const [fax, setFax] = useState(contact.fax)
     const [mobileNumber, setMobileNumber] = useState(contact.mobileNumber)
+    const [comment, setComment] = useState(contact.comment)
 
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ function ContactEdit() {
         e.preventDefault();
         try {
             const response = await axios.patch(UPDATE_CONTACT_URL + id,
-                JSON.stringify({ name, lastName, phoneNumber, nameOfCompany, address, email, fax, mobileNumber }),
+                JSON.stringify({ name, lastName, phoneNumber, nameOfCompany, address, email, fax, mobileNumber, comment }),
                 {
                     headers: { "Authorization": `Bearer ${auth}`, 'Content-Type': 'application/json' }
                 }
@@ -158,6 +159,18 @@ function ContactEdit() {
                         onChange={(e) => setMobileNumber(e.target.value)}
                         onFocus={() => setErrMsg('')}
                     /></div>
+
+                {/* Comment */}
+                <div className="comment">
+                    <h3>Comment</h3>
+                    <textarea
+                        id="comment"
+                        defaultValue={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        onFocus={() => setErrMsg('')}
+                        rows={4} />
+                </div>
+
                 <button className="big-btn new-contacts-btn">
                     Save Changes
                 </button>

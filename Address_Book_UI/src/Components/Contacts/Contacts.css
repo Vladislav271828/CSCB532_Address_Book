@@ -45,9 +45,12 @@
     width: 1rem;
 }
 
-.contact-list-container,
-form.contact-info-field-container {
+.contact-list-container {
     padding-bottom: 3.8rem;
+}
+
+form.contact-info-field-container {
+    padding-bottom: 5.3rem;
 }
 
 .contact-list-container>p {
@@ -80,18 +83,6 @@ h3 {
     font-weight: 600;
 }
 
-.comment-info p {
-    white-space: pre-line;
-    word-wrap: break-word;
-    padding: 0 6rem 1.5rem 30px;
-    text-align: left;
-}
-
-.comment-info h3 {
-    text-align: left;
-    padding-left: 30px;
-}
-
 .new-contacts-btn {
     position: absolute;
     bottom: 0;
@@ -105,14 +96,42 @@ h3 {
     justify-content: left;
 }
 
-.contact-info-field-container div {
-    width: 250px;
+.contact-info-field-container>div {
+    max-width: 100%;
     padding: 1.5rem 3rem 1.5rem 30px;
     text-align: left;
+    flex: 50%;
+}
+
+.contact-info-field-container div.comment {
+    flex: 100%;
+}
+
+.comment p {
+    white-space: pre-line;
+    word-wrap: break-word;
 }
 
 .contact-info-field-container input {
-    width: auto;
+    width: 100%;
     margin-bottom: 0;
     height: 40px;
+}
+
+.contact-info-field-container textarea {
+    width: 100%;
+    height: auto;
+    margin-bottom: 0;
+    padding: 2% 2.5%;
+    resize: none;
+}
+
+@media (max-width: 475px) {
+    .contact-info-field-container div {
+        flex: 100%;
+    }
+
+    .contact-info-field-container textarea {
+        padding: 2% 5%;
+    }
 }

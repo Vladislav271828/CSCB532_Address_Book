@@ -1,11 +1,3 @@
-::placeholder {
-    color: #646464;
-    font-weight: 400;
-    font-family: 'Montserrat', sans-serif;
-    /* Firefox */
-    opacity: 1;
-}
-
 .login-form-container {
     background-color: #ffffff;
     border-radius: 25px;
@@ -23,24 +15,6 @@
     font-size: 32px;
     color: #464646;
     font-weight: 800;
-}
-
-input:hover,
-input:focus {
-    outline: 2px solid #464646;
-}
-
-input {
-    width: 80%;
-    height: 50px;
-    margin-bottom: 18px;
-    padding: 0px 5%;
-    border-radius: 6px;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: #464646;
-    background-color: #eaeaea;
 }
 
 .login-form-text {

@@ -80,16 +80,17 @@ function ContactDetails() {
                         labelName="Label"
                         labelContents={(contact?.label) ? contact.label.name : "None"}
                     />
+                    {/* Comment */}
+                    <div className="comment">
+                        <ContactInfoField
+                            labelName="Comment"
+                            labelContents={contact?.comment}
+                            isHidden={contact?.comment}
+                        />
+                    </div>
                 </div>
 
-                {/* Comment */}
-                <div className="comment-info">
-                    <ContactInfoField
-                        labelName="Comment"
-                        labelContents={contact?.comment}
-                        isHidden={contact?.comment}
-                    />
-                </div>
+
             </>}
         </div>
     )
