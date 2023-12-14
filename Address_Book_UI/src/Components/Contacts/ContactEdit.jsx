@@ -3,8 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import ContactsContext from "../../Context/ContactsProvider";
 import AuthContext from "../../Context/AuthProvider";
 import axios from '../../API/axios'
+import trash from "./trash100.png";
 
 const UPDATE_CONTACT_URL = "/contact/update-contact/"
+const DELETE_CONTACT_URL = "/contact/delete-contact/"
 
 function ContactEdit() {
     const { auth } = useContext(AuthContext);
@@ -51,12 +53,42 @@ function ContactEdit() {
         }
     }
 
+    const deleteContact = async () => {
+        if (confirm("Are you sure you want to delete this contact?")) {
+            try {
+                const response = await axios.delete(DELETE_CONTACT_URL + id, {
+                    headers: { "Authorization": `Bearer ${auth}` }
+                });
+                navigate("/", { replace: true });
+            } catch (err) {
+                if (!err?.response) {
+                    setFetchErr('Unable to connect to server.');
+                }
+                else if (err.response.status == 401) {
+                    alert("Token expired, please login again.");
+                    location.reload();
+                }
+                else {
+                    setFetchErr(err.response.data.message);
+                }
+            }
+        }
+    }
+
     return (
         <div className="main-container">
-            <h2 className='main-header-text'>
-                Edit Contact
-            </h2>
-            <hr style={{ marginTop: "20px" }} />
+            <div className="contact-info-header-container">
+                <h2 className='main-header-text'>
+                    Edit Contact
+                </h2>
+                <button className='user-button edit-button'
+                    style={{ backgroundColor: "#fccccc" }}
+                    onClick={() => deleteContact()}>
+                    <img src={trash}
+                        alt="Delete Contact" />
+                </button>
+            </div>
+            <hr style={{ marginTop: "15px" }} />
             {errMsg == "" ? <></> : <p className='login-form-text' style={{ color: "red", padding: "10px 0px 0px 0px" }}>{errMsg}</p>}
             <form className="contact-info-field-container" onSubmit={handleSubmit}>
                 <div>
