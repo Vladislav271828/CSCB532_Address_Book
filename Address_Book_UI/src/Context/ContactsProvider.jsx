@@ -24,7 +24,7 @@ export const ContactsProvider = ({ children }) => {
             setFetchErr(null);
             setIsLoading(false);
         } catch (err) {
-            if (!err?.response) {
+            if (!err?.response.data?.message) {
                 setFetchErr('Unable to connect to server.');
             }
             else if (err.response.status == 401) {
@@ -51,7 +51,7 @@ export const ContactsProvider = ({ children }) => {
             setFetchErr(null);
             navigate("contact/" + response.data.id + "/edit")
         } catch (err) {
-            if (!err?.response) {
+            if (!err?.response.data?.message) {
                 setFetchErr('Unable to connect to server.');
             }
             else {

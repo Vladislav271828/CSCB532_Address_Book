@@ -33,11 +33,13 @@
   min-height: 100vh;
 }
 
-span:hover {
+span:hover,
+.contact-info-field-container a:hover {
   color: #646464;
 }
 
-span {
+span,
+.contact-info-field-container a {
   text-decoration: underline;
   cursor: pointer;
   color: #464646;
@@ -58,12 +60,19 @@ p {
 input:hover,
 input:focus,
 textarea:hover,
-textarea:focus {
+textarea:focus,
+select:hover,
+select:focus {
   outline: 2px solid #464646;
 }
 
+button {
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+}
+
 input,
-textarea {
+textarea,
+select {
   width: 80%;
   font-family: 'Montserrat', sans-serif;
   height: 50px;
@@ -88,7 +97,6 @@ textarea {
   font-size: 1.1rem;
   padding: 1.3rem;
   margin: 0;
-  font-family: 'Montserrat', 'Open Sans', sans-serif;
 }
 
 .big-btn:hover {

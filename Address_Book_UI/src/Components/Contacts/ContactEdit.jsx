@@ -1,16 +1,25 @@
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom";
+
 import ContactsContext from "../../Context/ContactsProvider";
 import AuthContext from "../../Context/AuthProvider";
+import LabelContext from "../../Context/LabelProvider";
+
 import axios from '../../API/axios'
 import trash from "./trash100.png";
+import ContactEditRows from "./ContactEditRows";
 
 const UPDATE_CONTACT_URL = "/contact/update-contact/"
 const DELETE_CONTACT_URL = "/contact/delete-contact/"
+const CREATE_CUSTOM_ROW_URL = "/custom-row/create-custom-row"
+const DELETE_CUSTOM_ROW_URL = "/custom-row/delete-custom-row-by-id/"
+const UPDATE_CUSTOM_ROW_URL = "/custom-row/update-custom-row/"
 
 function ContactEdit() {
     const { auth } = useContext(AuthContext);
     const { contacts, setContacts } = useContext(ContactsContext);
+    const { labels, fetchLabels } = useContext(LabelContext);
+
     const { id } = useParams();
     const contact = contacts.find(contact => (contact.id).toString() === id);
 
@@ -23,13 +32,139 @@ function ContactEdit() {
     const [fax, setFax] = useState(contact.fax)
     const [mobileNumber, setMobileNumber] = useState(contact.mobileNumber)
     const [comment, setComment] = useState(contact.comment)
+    const [labelId, setLabelId] = useState((contact.label?.id) ? contact.label.id : "0")
+
+    const [customRows, setCustomRows] = useState((contact?.customRows) ? contact.customRows : [])
+    const [newCustomRows, setNewCustomRows] = useState([])
+    const [deletedCustomRows, setDeletedCustomRows] = useState([])
+
+    // customRowTemp is used to prevent rerendering while handing custom rows
+    // JSON.parse(JSON.stringify()) is used to make a deep copy
+    const [customRowTemp, setCustomRowTemp] = useState(JSON.parse(JSON.stringify(customRows)))
 
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
 
+    useEffect(() => {
+        fetchLabels();
+    }, [])
+
+    const changeLabelOfContact = async (url) => {
+        // works only if body is null
+        try {
+            await axios.patch(url, null, {
+                headers: { "Authorization": `Bearer ${auth}` }
+            });
+        } catch (err) {
+            if (!err?.response.data?.message) {
+                console.log(err);
+            }
+            else {
+                console.log("changeLabelOfContact: " + err.response.data.message);
+            }
+        }
+    }
+
+    const createCustomRow = async (name, field) => {
+        try {
+            const response = await axios.post(CREATE_CUSTOM_ROW_URL, {
+                "contactId": id,
+                "customName": name,
+                "customField": field
+            }, {
+                headers: { "Authorization": `Bearer ${auth}`, 'Content-Type': 'application/json' }
+            });
+            setCustomRowTemp([...customRowTemp, response])
+
+        } catch (err) {
+            if (!err?.response.data?.message) {
+                console.log(err);
+            }
+            else {
+                console.log("createCustomRow: " + err.response.data.message);
+            }
+        }
+    }
+
+    const updateCustomRow = async (name, field, rowId) => {
+        try {
+            const response = await axios.patch(UPDATE_CUSTOM_ROW_URL + rowId, {
+                "customName": name,
+                "customField": field
+            }, {
+                headers: { "Authorization": `Bearer ${auth}`, 'Content-Type': 'application/json' }
+            });
+            const listCustomRow = customRowTemp.map((item) => item.id == id ? response.data : item);
+            setCustomRowTemp(listCustomRow)
+        } catch (err) {
+            if (!err?.response.data?.message) {
+                console.log(err);
+            }
+            else {
+                console.log("createCustomRow: " + err.response.data.message);
+            }
+        }
+    }
+
+    const deleteCustomRowFunc = async (rowId) => {
+        try {
+            await axios.delete(DELETE_CUSTOM_ROW_URL + rowId, {
+                headers: {
+                    "Authorization": `Bearer ${auth}`
+                }
+            });
+            const rows = customRowTemp.filter((row) => row.id !== rowId)
+            setCustomRowTemp(rows);
+
+        } catch (err) {
+            if (!err?.response.data?.message) {
+                console.log(err);
+            }
+            else {
+                console.log("deleteCustomRow: " + err.response.data.message);
+            }
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const lastLabelId = (contact.label?.id) ? contact.label.id : "0";
+            if (lastLabelId != labelId) {
+                if (labelId == "0")
+                    await changeLabelOfContact("/contact/" + id + "/remove-label");
+                else
+                    await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
+            }
+
+            const updateRowsPromise = customRows.map(async (row, index) => {
+                if (row.customName || row.customField) {
+                    if (row.customName != customRowTemp[index].customName || row.customField != customRowTemp[index].customField) {
+                        const name = (row.customName) ? row.customName : "Custom Field"
+                        const field = (row.customField) ? row.customField : "Empty"
+                        await updateCustomRow(name, field, row.id)
+                    }
+                }
+                else {
+                    await deleteCustomRowFunc(row.id)
+                }
+            });
+            await Promise.all(updateRowsPromise);
+
+            const newRowsPromise = newCustomRows.map(async (row) => {
+                if (row.customName || row.customField) {
+                    const name = (row.customName) ? row.customName : "Custom Field"
+                    const field = (row.customField) ? row.customField : "Empty"
+                    await createCustomRow(name, field)
+                }
+            });
+            await Promise.all(newRowsPromise);
+
+            const deleteRowsPromise = deletedCustomRows.map(async (id) => {
+                await deleteCustomRowFunc(id)
+            });
+            await Promise.all(deleteRowsPromise);
+
             const response = await axios.patch(UPDATE_CONTACT_URL + id,
                 JSON.stringify({ name, lastName, phoneNumber, nameOfCompany, address, email, fax, mobileNumber, comment }),
                 {
@@ -39,10 +174,14 @@ function ContactEdit() {
 
             const listContacts = contacts.map((item) => item.id == id ? response.data : item);
             setContacts(listContacts);
+            setCustomRows([...customRowTemp]);
+            setNewCustomRows([]);
+            setDeletedCustomRows([]);
             navigate("..", { relative: "path" });
         } catch (err) {
-            if (!err?.response) {
+            if (!err?.response.data?.message) {
                 setErrMsg('Unable to connect to server.');
+                console.log(err);
             }
             else if (err.response.status == 401) {
                 alert("Token expired, please login again.");
@@ -57,20 +196,20 @@ function ContactEdit() {
     const deleteContact = async () => {
         if (confirm("Are you sure you want to delete this contact?")) {
             try {
-                const response = await axios.delete(DELETE_CONTACT_URL + id, {
+                await axios.delete(DELETE_CONTACT_URL + id, {
                     headers: { "Authorization": `Bearer ${auth}` }
                 });
                 navigate("/", { replace: true });
             } catch (err) {
-                if (!err?.response) {
-                    setFetchErr('Unable to connect to server.');
+                if (!err?.response.data?.message) {
+                    setErrMsg('Unable to connect to server.');
                 }
                 else if (err.response.status == 401) {
                     alert("Token expired, please login again.");
                     location.reload();
                 }
                 else {
-                    setFetchErr(err.response.data.message);
+                    setErrMsg(err.response.data.message);
                 }
             }
         }
@@ -82,7 +221,7 @@ function ContactEdit() {
                 <h2 className='main-header-text'>
                     Edit Contact
                 </h2>
-                <button className='user-button edit-button'
+                <button className='small-button edit-button'
                     style={{ backgroundColor: "#fccccc" }}
                     onClick={() => deleteContact()}>
                     <img src={trash}
@@ -159,6 +298,25 @@ function ContactEdit() {
                         onChange={(e) => setMobileNumber(e.target.value)}
                         onFocus={() => setErrMsg('')}
                     /></div>
+
+                {/* Label */}
+                <div>
+                    <h3>Label</h3>
+                    <select
+                        value={labelId}
+                        onChange={e => setLabelId(e.target.value)}>
+                        <option value="0">None</option>
+                        {labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                    </select></div>
+
+                {/* Custom Row */}
+                <ContactEditRows
+                    customRows={customRows}
+                    setCustomRows={setCustomRows}
+                    newCustomRows={newCustomRows}
+                    setNewCustomRows={setNewCustomRows}
+                    deletedCustomRows={deletedCustomRows}
+                    setDeletedCustomRows={setDeletedCustomRows} />
 
                 {/* Comment */}
                 <div className="comment">

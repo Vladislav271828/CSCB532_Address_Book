@@ -16,7 +16,7 @@ function ContactDetails() {
                     Contact Details
                 </h2>
                 <Link to="edit" >
-                    <button className='user-button edit-button'>
+                    <button className='small-button edit-button'>
                         <img src={edit}
                             alt="Edit Contact" />
                     </button>
@@ -38,7 +38,7 @@ function ContactDetails() {
                     />
                     <ContactInfoField
                         labelName="Phone Number"
-                        labelContents={contact?.phoneNumber}
+                        labelContents={<a href={"tel:" + contact?.phoneNumber}>{contact?.phoneNumber}</a>}
                         isHidden={contact?.phoneNumber}
                     />
                     <ContactInfoField
@@ -53,7 +53,7 @@ function ContactDetails() {
                     />
                     <ContactInfoField
                         labelName="Email"
-                        labelContents={contact?.email}
+                        labelContents={<a href={"mailto:" + contact?.email}>{contact?.email}</a>}
                         isHidden={contact?.email}
                     />
                     <ContactInfoField
@@ -63,7 +63,7 @@ function ContactDetails() {
                     />
                     <ContactInfoField
                         labelName="Mobile Number"
-                        labelContents={contact?.mobileNumber}
+                        labelContents={<a href={"tel:" + contact?.mobileNumber}>{contact?.mobileNumber}</a>}
                         isHidden={contact?.mobileNumber}
                     />
 
@@ -81,13 +81,13 @@ function ContactDetails() {
                         labelContents={(contact?.label) ? contact.label.name : "None"}
                     />
                     {/* Comment */}
-                    <div className="comment">
-                        <ContactInfoField
-                            labelName="Comment"
-                            labelContents={contact?.comment}
-                            isHidden={contact?.comment}
-                        />
-                    </div>
+                    {(contact?.comment) ?
+                        <div className="comment">
+                            <ContactInfoField
+                                labelName="Comment"
+                                labelContents={contact?.comment}
+                            />
+                        </div> : <></>}
                 </div>
 
 

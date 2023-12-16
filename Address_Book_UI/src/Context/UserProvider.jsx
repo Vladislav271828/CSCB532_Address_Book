@@ -23,7 +23,7 @@ export const UserProvider = ({ children }) => {
             setEmail(response.data.email);
             console.log(auth);
         } catch (err) {
-            if (!err?.response) {
+            if (!err?.response.data?.message) {
                 console.log('fetchUser: Unable to connect to server.');
             }
             else {

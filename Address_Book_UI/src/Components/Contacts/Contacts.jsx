@@ -36,7 +36,7 @@ function Contacts() {
                     placeholder="Search Contacts"
                 />
                 <Link to="/settings">
-                    <button className='user-button'>
+                    <button className='small-button'>
                         <img src={user}
                             alt="User Settings"
                             style={{ width: "1.5rem" }} />
