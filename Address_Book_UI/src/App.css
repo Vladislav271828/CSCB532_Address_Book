@@ -33,18 +33,58 @@
   min-height: 100vh;
 }
 
-span:hover {
+span:hover,
+.contact-info-field-container a:hover {
   color: #646464;
 }
 
-span {
+span,
+.contact-info-field-container a {
   text-decoration: underline;
   cursor: pointer;
   color: #464646;
 }
 
-p {
+p,
+li {
   color: #464646;
+}
+
+::placeholder {
+  color: #646464;
+  font-weight: 400;
+  font-family: 'Montserrat', sans-serif;
+  /* Firefox */
+  opacity: 1;
+}
+
+input:hover,
+input:focus,
+textarea:hover,
+textarea:focus,
+select:hover,
+select:focus {
+  outline: 2px solid #464646;
+}
+
+button {
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+}
+
+input,
+textarea,
+select {
+  width: 80%;
+  font-family: 'Montserrat', sans-serif;
+  height: 50px;
+  margin-bottom: 18px;
+  padding: 0px 5%;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #464646;
+  background-color: #eaeaea;
 }
 
 .big-btn {
@@ -58,7 +98,6 @@ p {
   font-size: 1.1rem;
   padding: 1.3rem;
   margin: 0;
-  font-family: 'Montserrat', 'Open Sans', sans-serif;
 }
 
 .big-btn:hover {
@@ -78,8 +117,47 @@ p {
   position: relative;
 }
 
-.main-header {
+.main-header-text {
   color: #464646;
-  margin: 20px 30px 5px 30px;
+  margin: 25px 10px 5px 30px;
   text-align: left;
+  line-height: 1;
+}
+
+.force-bottom-btn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.small-button {
+  height: 50px;
+  min-width: 50px;
+  line-height: 0;
+  border: none;
+  border-radius: 6px;
+  color: #464646;
+  background-color: #eaeaea;
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+.small-button:hover {
+  outline: 2px solid #464646;
+}
+
+.small-button img {
+  width: 1rem;
+}
+
+.main-header-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.main-header-container button {
+  height: 40px;
+  min-width: 40px;
+  margin: 15px 30px 0px 0px;
 }

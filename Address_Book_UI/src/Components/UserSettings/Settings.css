@@ -1,0 +1,54 @@
+.setting li {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 20px 25px 20px 30px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: left;
+}
+
+.setting li:hover {
+    background-color: #eaeaea;
+    cursor: pointer;
+}
+
+.label-container {
+    padding-bottom: 3.8rem;
+}
+
+.label-container p {
+    margin-top: 5vh;
+}
+
+.label-container div {
+    width: 100%;
+    padding: 20px 25px 0px 30px;
+    display: flex;
+}
+
+.label-container input {
+    width: 70%;
+    margin: 0px 10px 0px 0px;
+}
+
+.label-container select {
+    width: 30%;
+    margin: 0px 10px 0px 0px;
+}
+
+@media (max-width: 500px) {
+    .label-container div {
+        flex-wrap: wrap;
+    }
+
+    .label-container select {
+        width: calc(100% - 60px);
+    }
+
+    .label-container input {
+        width: 100%;
+        flex: 100%;
+        margin: 0px 0px 10px 0px;
+
+    }
+}

@@ -30,7 +30,7 @@ function Login() {
             setAuth(response.data.token);
             navigate("/");
         } catch (err) {
-            if (!err?.response) {
+            if (!err?.response.data?.message) {
                 setErrMsg('Unable to connect to server.');
             }
             else {
