@@ -19,18 +19,30 @@ const ContactsList = ({ contacts }) => {
         return result;
     }
 
+    const convertToCSS = (colorArray) => {
+        return `rgb(${colorArray[0]}, ${colorArray[1]}, ${colorArray[2]})`;
+    }
+
     return (
         <>
-            {contacts.sort(compareFN).map((item) => (
-                <div key={item.id}>
-                    <Link to={`/contact/${item.id}`}>
-                        <div className="contact">
-                            <p style={{ fontWeight: "600" }}>{item.name} {item.lastName}</p>
-                            <p>{item.phoneNumber}</p>
-                        </div>
-                    </Link>
-                </div>
-            ))}
+            {contacts.sort(compareFN).map((item) => {
+
+                const color = (item?.label != null) ? item.label.colorRGB.split(", ", 3) : [255, 255, 255];
+                const hoverColor = color.map((value) => Math.round(value * 0.917));
+
+                return (
+                    <div key={item.id}>
+                        <Link to={`/contact/${item.id}`}>
+                            <div className="contact"
+                                style={
+                                    { backgroundColor: convertToCSS(color), color: convertToCSS(hoverColor) }}>
+                                <p style={{ fontWeight: "600" }}>{item.name} {item.lastName}</p>
+                                <p>{item.phoneNumber}</p>
+                            </div>
+                        </Link>
+                    </div>
+                )
+            })}
         </>
     )
 }

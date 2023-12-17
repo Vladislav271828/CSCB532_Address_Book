@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import ContactsContext from "../../Context/ContactsProvider";
 import { Link, useParams, Navigate } from "react-router-dom";
-import edit from "./edit100.png";
+import edit from "../../Icons/edit.png";
 import ContactInfoField from "./ContactInfoField";
 
 function ContactDetails() {
@@ -11,13 +11,14 @@ function ContactDetails() {
 
     return (
         <div className="main-container">
-            <div className="contact-info-header-container">
+            <div className="main-header-container">
                 <h2 className='main-header-text'>
                     Contact Details
                 </h2>
                 <Link to="edit" >
-                    <button className='small-button edit-button'>
+                    <button className='small-button'>
                         <img src={edit}
+                            loading="eager"
                             alt="Edit Contact" />
                     </button>
                 </Link>

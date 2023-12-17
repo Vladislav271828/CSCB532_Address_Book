@@ -1,6 +1,6 @@
-import trash from "./trash100.png";
+import trash from "../../Icons/trash.png";
 
-const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows, deletedCustomRows }) => {
+const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows, deletedCustomRows, customRowTemp, setCustomRowTemp }) => {
     const handleFormChange = (event, index) => {
         let data = [...customRows];
         data[index][event.target.name] = event.target.value;
@@ -14,6 +14,10 @@ const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows
         let data = [...customRows];
         data.splice(index, 1)
         setCustomRows(data)
+
+        let dataTemp = [...customRowTemp];
+        dataTemp.splice(index, 1);
+        setCustomRowTemp(dataTemp);
     }
 
     return (
@@ -32,6 +36,7 @@ const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows
                             className="small-button delete-row"
                             onClick={() => handleDelete(index)}>
                             <img src={trash}
+                                loading="eager"
                                 alt="Delete Field" />
                         </button>
                     </div>

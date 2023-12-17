@@ -6,7 +6,7 @@ import AuthContext from "../../Context/AuthProvider";
 import LabelContext from "../../Context/LabelProvider";
 
 import axios from '../../API/axios'
-import trash from "./trash100.png";
+import trash from "../../Icons/trash.png";
 import ContactEditRows from "./ContactEditRows";
 
 const UPDATE_CONTACT_URL = "/contact/update-contact/"
@@ -174,9 +174,6 @@ function ContactEdit() {
 
             const listContacts = contacts.map((item) => item.id == id ? response.data : item);
             setContacts(listContacts);
-            setCustomRows([...customRowTemp]);
-            setNewCustomRows([]);
-            setDeletedCustomRows([]);
             navigate("..", { relative: "path" });
         } catch (err) {
             if (!err?.response.data?.message) {
@@ -217,12 +214,12 @@ function ContactEdit() {
 
     return (
         <div className="main-container">
-            <div className="contact-info-header-container">
+            <div className="main-header-container">
                 <h2 className='main-header-text'>
                     Edit Contact
                 </h2>
-                <button className='small-button edit-button'
-                    style={{ backgroundColor: "#fccccc" }}
+                <button className='small-button'
+                    style={{ backgroundColor: "#f4c0ae" }}
                     onClick={() => deleteContact()}>
                     <img src={trash}
                         alt="Delete Contact" />
@@ -313,6 +310,8 @@ function ContactEdit() {
                 <ContactEditRows
                     customRows={customRows}
                     setCustomRows={setCustomRows}
+                    customRowTemp={customRowTemp}
+                    setCustomRowTemp={setCustomRowTemp}
                     newCustomRows={newCustomRows}
                     setNewCustomRows={setNewCustomRows}
                     deletedCustomRows={deletedCustomRows}
@@ -329,7 +328,7 @@ function ContactEdit() {
                         rows={4} />
                 </div>
 
-                <button className="big-btn new-contacts-btn">
+                <button className="big-btn force-bottom-btn">
                     Save Changes
                 </button>
             </form>

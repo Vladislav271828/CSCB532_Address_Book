@@ -1,4 +1,4 @@
-import user from "./user100.png";
+import gear from "../../Icons/gear.png";
 import './Contacts.css'
 
 import { useState, useEffect, useContext } from "react";
@@ -37,9 +37,10 @@ function Contacts() {
                 />
                 <Link to="/settings">
                     <button className='small-button'>
-                        <img src={user}
-                            alt="User Settings"
-                            style={{ width: "1.5rem" }} />
+                        <img src={gear}
+                            style={{ width: "1.2rem" }}
+                            loading="eager"
+                            alt="Settings" />
                     </button>
                 </Link>
             </div>
@@ -59,7 +60,7 @@ function Contacts() {
                 )}
             </div>
             <button
-                className="big-btn new-contacts-btn"
+                className="big-btn force-bottom-btn"
                 onClick={() => createContact()}>Create Contact
             </button>
         </div>

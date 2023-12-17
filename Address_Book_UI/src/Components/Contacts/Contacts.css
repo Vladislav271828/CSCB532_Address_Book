@@ -14,37 +14,6 @@
     margin: 0;
 }
 
-.contact-info-header-container {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-}
-
-.small-button {
-    height: 50px;
-    min-width: 50px;
-    line-height: 0;
-    border: none;
-    border-radius: 6px;
-    color: #464646;
-    background-color: #eaeaea;
-    cursor: pointer;
-}
-
-.edit-button {
-    height: 40px;
-    min-width: 40px;
-    margin: 15px 30px 0px 0px;
-}
-
-.small-button:hover {
-    outline: 2px solid #464646;
-}
-
-.small-button img {
-    width: 1rem;
-}
-
 .contact-list-container {
     padding-bottom: 3.8rem;
 }
@@ -70,7 +39,8 @@ form.contact-info-field-container {
 }
 
 .contact:hover {
-    background-color: #eaeaea;
+    /* clever hack using currentcolor as a dynamic variable as it is not visible */
+    background-color: currentColor !important;
     cursor: pointer;
 }
 
@@ -82,12 +52,6 @@ hr {
 h3 {
     font-weight: 600;
     height: 30px;
-}
-
-.new-contacts-btn {
-    position: absolute;
-    bottom: 0;
-    left: 0;
 }
 
 .contact-info-field-container {
@@ -147,7 +111,7 @@ h3 {
     min-width: 25px;
     height: 25px;
     margin-left: 5px;
-    background-color: #fccccc;
+    background-color: #f4c0ae;
 }
 
 @media (max-width: 500px) {
