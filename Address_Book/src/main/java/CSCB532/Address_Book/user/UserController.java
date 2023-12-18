@@ -51,7 +51,7 @@ public class UserController {
     public ResponseEntity<String> updateEmailRequest(@Valid @RequestBody DtoEmailRequest dtoEmailRequest) throws IOException {
 
         emailService.sendVerificationEmailChange(dtoEmailRequest.getEmail());
-        return new ResponseEntity<>("Registration successful, please check your email for verification", HttpStatus.CREATED);
+        return new ResponseEntity<>("To complete the process of changing your email, please check your email for verification", HttpStatus.CREATED);
     }
 
     @GetMapping("/verifyEmailChange")
