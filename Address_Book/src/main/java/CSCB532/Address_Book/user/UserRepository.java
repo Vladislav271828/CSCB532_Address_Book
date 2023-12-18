@@ -16,4 +16,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u.verified FROM User u WHERE u.id = :userId")
     Boolean isUserVerified(Integer userId);
 
+    int countByEmail(String email);
 }

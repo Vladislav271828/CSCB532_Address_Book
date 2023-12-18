@@ -1,8 +1,10 @@
 package CSCB532.Address_Book.user;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
+import CSCB532.Address_Book.auth.emailVerification.VerificationRepository;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.exception.DatabaseException;
+import CSCB532.Address_Book.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,17 +18,18 @@ public class UserService {
 
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
+    private final VerificationRepository verificationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     public DtoUserResponse getUserProfile() {
-        User currentUser = authenticationService.getCurrentlyLoggedUser();
-        ModelMapper modelMapper = new ModelMapper();
+        User currentUser = getCurrentlyLoggedUser();
         return modelMapper.map(currentUser, DtoUserResponse.class);
     }
 
     public String updateUserPassword(DtoPasswordRequest dtoPasswordRequest) {
         //The incoming data is going to already be checked here because of the DTO validation annotation
-        User currentUser = authenticationService.getCurrentlyLoggedUser();
+        User currentUser = getCurrentlyLoggedUser();
         currentUser.setPassword(passwordEncoder.encode(dtoPasswordRequest.getPassword()));
 
         userRepository.save(currentUser);
@@ -41,7 +44,7 @@ public class UserService {
         }
 
         // Get user information
-        User currentUser = authenticationService.getCurrentlyLoggedUser();
+        User currentUser = getCurrentlyLoggedUser();
 
         boolean isChanged = false;
         // Update first name if provided and different from the current name
@@ -52,7 +55,7 @@ public class UserService {
             isChanged = true;
         }
 
-        // Update last name if provided and different from the current name
+        // Update last name if provided and different from the current last name
         String newLastName = dtoUserNamesRequest.getLastName();
         if (newLastName != null && !newLastName.trim().isEmpty() &&
                 !newLastName.equals(currentUser.getLastname())) {
@@ -68,23 +71,26 @@ public class UserService {
         userRepository.save(currentUser);
 
         // Map to DTO and return the response
-        ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(currentUser, DtoUserResponse.class);
     }
 
 
     public void deleteUserProfile() {
-        User currentUser = authenticationService.getCurrentlyLoggedUser();
+        User currentUser = getCurrentlyLoggedUser();
 
         if (userRepository.existsByEmail(currentUser.getEmail())){
-            userRepository.delete(userRepository.findByEmail(currentUser.getEmail()).orElseThrow(
-                    () -> new DatabaseException("Problem finding user")
-            ));
+            User userToDelete = userRepository.findByEmail(currentUser.getEmail())
+                    .orElseThrow(() -> new DatabaseException("Problem finding user"));
+            // Remove related Verification entities
+            verificationRepository.deleteByUser(userToDelete);
+
+            // Now safe to delete the user
+            userRepository.delete(userToDelete);
         }
     }
 
     public DtoUserResponse updateEmail(DtoEmailRequest dtoEmailRequest) {
-        User currentUser = authenticationService.getCurrentlyLoggedUser();
+        User currentUser = getCurrentlyLoggedUser();
 
         //check if the email the user is trying to update with is already in db
         boolean isEmailTaken = isEmailTaken(dtoEmailRequest.getEmail());
@@ -102,13 +108,15 @@ public class UserService {
         currentUser = userRepository.save(currentUser);
 
         // Map to DTO and return the response
-        ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(currentUser, DtoUserResponse.class);
     }
 
 
     public boolean isEmailTaken(String email){
-        Optional<User> user = userRepository.findByEmail(email);
-        return user.isPresent();
+        return userRepository.countByEmail(email) > 0;
+    }
+
+    private User getCurrentlyLoggedUser(){
+        return UserUtil.getCurrentlyLoggedUser(authenticationService);
     }
 }

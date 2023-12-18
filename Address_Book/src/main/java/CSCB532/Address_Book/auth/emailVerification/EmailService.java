@@ -74,13 +74,14 @@ public class EmailService {
     public void sendVerificationEmailChange(String to) throws IOException {
         User currentUser = authenticationService.getCurrentlyLoggedUser();
 
-        if (currentUser.getEmail().equals(to)){
+        String userEmail = currentUser.getEmail();
+        if (currentUser.getEmail().equals(to) || userRepository.existsByEmail(to)){
             throw new BadRequestException("Email already in use.");
         }
         Optional<User> user = userRepository.findByEmail(currentUser.getEmail());
         if (user.isEmpty()) {
             // Handle the case where the user is not found
-            throw new IllegalArgumentException("No user found with email: " + to);
+            throw new IllegalArgumentException("No user found with email: " + userEmail);
         }
 
         String verificationCode = createVerificationCode();
@@ -92,7 +93,7 @@ public class EmailService {
         verificationRepository.save(verification);
 
         Email from = new Email("AddressBookCSB532@gmail.com");
-        Email toEmail = new Email(to);
+        Email toEmail = new Email(userEmail);
         String subject = "Email Verification";
         Content content = new Content("text/plain", "Please click the link to verify that you want to change your email: " +
                 "http://localhost:8080/api/v1/user-profile/verifyEmailChange?code=" + verificationCode + "&email=" + to);
