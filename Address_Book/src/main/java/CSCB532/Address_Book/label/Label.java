@@ -32,7 +32,7 @@ import java.util.List;
     private User user;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "label", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Contact> contacts;
 
 
