@@ -37,4 +37,9 @@ public interface ContactRepository extends JpaRepository<Contact, Integer>{
             @Param("lastName") String lastName
     );
 
+    @Query("SELECT c FROM Contact c " +
+            "WHERE c.label = :labelId ")
+    List<Contact> findAllWithLabelId(
+            @Param("labelId") Integer labelId
+    );
 }

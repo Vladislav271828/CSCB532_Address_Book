@@ -1,6 +1,9 @@
 package CSCB532.Address_Book.label;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
+import CSCB532.Address_Book.contact.Contact;
+import CSCB532.Address_Book.contact.ContactRepository;
+import CSCB532.Address_Book.contact.ContactService;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.exception.CustomRowNotFoundException;
 import CSCB532.Address_Book.exception.DatabaseException;
@@ -22,10 +25,14 @@ import java.util.stream.Collectors;
 public class LabelService {
     private final AuthenticationService authenticationService;
     private final LabelRepository labelRepository;
+    private final ContactRepository contactRepository;
+    private final ContactService contactService;
 
-    public LabelService(AuthenticationService authenticationService, LabelRepository labelRepository) {
+    public LabelService(AuthenticationService authenticationService, LabelRepository labelRepository, ContactRepository contactRepository, ContactService contactService) {
         this.authenticationService = authenticationService;
         this.labelRepository = labelRepository;
+        this.contactRepository = contactRepository;
+        this.contactService = contactService;
     }
 
     public DtoLabel createLabel(DtoLabel dtoLabel) {
@@ -171,6 +178,13 @@ public class LabelService {
         if (labelId == null || labelId < 0) {
             throw new BadRequestException("Label ID must be a positive integer.");
         }
+
+        List<Contact> contacts = contactRepository.findAllWithLabelId(labelId);
+        contacts.forEach(contact -> {
+            // Set the desired variable in each Contact to null
+            contact.setLabel(null);
+        });
+
 
         Label label = labelRepository.findById(labelId)
                 .orElseThrow(() -> new LabelNotFoundException("No label with id " + labelId + " found."));
