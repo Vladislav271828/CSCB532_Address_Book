@@ -48,7 +48,7 @@ const LabelField = ({ setLabels, labels, setDeletedLabels, deletedLabels }) => {
                     <button
                         className="small-button"
                         type="button"
-                        style={{ backgroundColor: "#f4c0ae" }}
+                        style={{ backgroundColor: "rgb(244, 191, 174)" }}
                         onClick={() => handleDelete(index)}>
                         <img src={trash}
                             loading="eager"

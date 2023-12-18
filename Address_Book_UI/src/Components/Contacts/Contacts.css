@@ -4,8 +4,7 @@
     padding: 0px 30px;
 }
 
-.main-container .search-form {
-    width: 100%;
+.contacts-search-container .search-form {
     margin-right: 10px;
 }
 
@@ -111,7 +110,7 @@ h3 {
     min-width: 25px;
     height: 25px;
     margin-left: 5px;
-    background-color: #f4c0ae;
+    background-color: rgb(244, 191, 174);
 }
 
 @media (max-width: 500px) {

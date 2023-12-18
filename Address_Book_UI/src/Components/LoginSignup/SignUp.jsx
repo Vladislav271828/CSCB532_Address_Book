@@ -37,7 +37,7 @@ function SignUp() {
                 setPwd('');
             } catch (err) {
                 setSuccess(false);
-                if (!err?.response.data?.message) {
+                if (!err?.response) {
                     setErrMsg('Unable to connect to server.');
                 }
                 else {
