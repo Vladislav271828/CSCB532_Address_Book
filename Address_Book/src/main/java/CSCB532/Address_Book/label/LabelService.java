@@ -87,6 +87,11 @@ public class LabelService {
         if (dtoLabel.getId()!=null){
             dtoLabel.setId(null);
         }
+
+        if (dtoLabel.getName() == null && dtoLabel.getColorRGB() == null){
+            throw new BadRequestException("Incorrect request body");
+        }
+
         // Validate input
         Label existingLabel = labelRepository.findById(labelId)
                 .orElseThrow(() -> new CustomRowNotFoundException("Label not found for ID: " + labelId));
@@ -119,15 +124,15 @@ public class LabelService {
             }
         }
 
-        if (dtoLabel.getName() == null && dtoLabel.getColorRGB() == null){
-            throw new BadRequestException("Incorrect request body");
-        }
-
-
 
         //checks if the currently logged user is attempting to update a label that's not theirs
         validateUserPermission(labelId);
+        User user = authenticationService.getCurrentlyLoggedUser();
+        boolean isNameAlreadyInUseByLoggedUser = labelRepository.existsByNameAndUserId(dtoLabel.getName(), user.getId());
 
+        if (isNameAlreadyInUseByLoggedUser){
+            throw new BadRequestException("The label name " + dtoLabel.getName() + " is already in use.");
+        }
 
         // Find the existing label
         Label label = labelRepository.findById(labelId)
