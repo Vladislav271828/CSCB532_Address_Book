@@ -219,7 +219,7 @@ function ContactEdit() {
                     Edit Contact
                 </h2>
                 <button className='small-button'
-                    style={{ backgroundColor: "#f4c0ae" }}
+                    style={{ backgroundColor: "rgb(244, 191, 174)" }}
                     onClick={() => deleteContact()}>
                     <img src={trash}
                         alt="Delete Contact" />
