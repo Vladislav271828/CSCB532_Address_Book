@@ -67,4 +67,10 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/get-contacts-with-most-common-label-as-admin")
+    public ResponseEntity<List<DtoContact>> getContactsWithMostCommonLabel() {
+
+        return ResponseEntity.ok(adminService.getContactsWithMostCommonLabel());
+    }
 }

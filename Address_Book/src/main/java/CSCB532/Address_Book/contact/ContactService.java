@@ -154,7 +154,6 @@ public class ContactService {
      * If the contact is found and successfully deleted, a success message is returned.
      *
      * @param contactId The ID of the contact to be deleted.
-     * @return A {@link String} message indicating successful deletion.
      * @throws BadRequestException     if the {@code contactId} is {@code null} or negative.
      * @throws ContactNotFoundException if no contact with the specified ID is found.
      * @throws DatabaseException       if there is an issue with the database operation.
@@ -345,6 +344,17 @@ public class ContactService {
             workbook.write(outputStream);
             return outputStream.toByteArray();
         }
+    }
+
+    public List<DtoContact> getContactsWithMostCommonLabelByUserId(){
+        User user = authenticationService.getCurrentlyLoggedUser();
+        List<Contact> userContacts = contactRepository.findAllWithMostCommonLabelByUserId(user.getId());
+
+        ModelMapper modelMapper = new ModelMapper();
+
+        return userContacts.stream()
+                .map(contact -> modelMapper.map(contact, DtoContact.class))
+                .collect(Collectors.toList());
     }
 
 }

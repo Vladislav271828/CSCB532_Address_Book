@@ -42,4 +42,30 @@ public interface ContactRepository extends JpaRepository<Contact, Integer>{
     List<Contact> findAllWithLabelId(
             @Param("labelId") Integer labelId
     );
+
+    @Query("SELECT c FROM Contact c " +
+            "JOIN c.label mostCommonLabel " +
+            "WHERE c.user.id = :userId " +
+            "AND mostCommonLabel.id = (" +
+            "   SELECT c2.label.id " +
+            "   FROM Contact c2 " +
+            "   WHERE c2.user.id = :userId " +
+            "   GROUP BY c2.label " +
+            "   ORDER BY COUNT(c2.label) DESC " +
+            "   LIMIT 1" +
+            ")")
+    List<Contact> findAllWithMostCommonLabelByUserId(
+            @Param("userId") Integer userId
+    );
+
+    @Query("SELECT c FROM Contact c " +
+            "JOIN c.label mostCommonLabel " +
+            "WHERE mostCommonLabel.id = (" +
+            "   SELECT c2.label.id " +
+            "   FROM Contact c2 " +
+            "   GROUP BY c2.label " +
+            "   ORDER BY COUNT(c2.label) DESC " +
+            "   LIMIT 1" +
+            ")")
+    List<Contact> findAllWithMostCommonLabel();
 }

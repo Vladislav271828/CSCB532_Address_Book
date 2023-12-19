@@ -108,4 +108,10 @@ public class ContactController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/get-contacts-with-most-common-label-as-user")
+    public ResponseEntity<List<DtoContact>> getContactsWithMostCommonLabel() {
+
+        return ResponseEntity.ok(contactService.getContactsWithMostCommonLabelByUserId());
+    }
 }

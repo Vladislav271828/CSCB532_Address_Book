@@ -5,10 +5,8 @@ import CSCB532.Address_Book.contact.Contact;
 import CSCB532.Address_Book.contact.ContactRepository;
 import CSCB532.Address_Book.contact.ContactService;
 import CSCB532.Address_Book.contact.DtoContact;
-import CSCB532.Address_Book.customRow.DtoCustomRow;
 import CSCB532.Address_Book.exception.BadRequestException;
 import CSCB532.Address_Book.user.Role;
-import CSCB532.Address_Book.user.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminService {
 
-    private final UserRepository repository;
     private final AuthenticationService authenticationService;
-    private final UserRepository userRepository;
     private final ContactService contactService;
     private final ContactRepository contactRepository;
 
@@ -170,5 +166,16 @@ public class AdminService {
             workbook.write(outputStream);
             return outputStream.toByteArray();
         }
+    }
+
+    public List<DtoContact> getContactsWithMostCommonLabel(){
+        checkIfUserIsAdmin();
+        List<Contact> userContacts = contactRepository.findAllWithMostCommonLabel();
+
+        ModelMapper modelMapper = new ModelMapper();
+
+        return userContacts.stream()
+                .map(contact -> modelMapper.map(contact, DtoContact.class))
+                .collect(Collectors.toList());
     }
 }
