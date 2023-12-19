@@ -179,11 +179,9 @@ public class LabelService {
             throw new BadRequestException("Label ID must be a positive integer.");
         }
 
+        //remove the label from existing contacts
         List<Contact> contacts = contactRepository.findAllWithLabelId(labelId);
-        contacts.forEach(contact -> {
-            // Set the desired variable in each Contact to null
-            contact.setLabel(null);
-        });
+        contacts.forEach(contact -> contactService.RemoveLabelFromContact(contact.getId()));
 
 
         Label label = labelRepository.findById(labelId)
