@@ -2,7 +2,7 @@ import { useContext, useState } from "react"
 import UserContext from "../../Context/UserProvider"
 
 function UserSettings() {
-    const { firstName, lastName, email, changeUsernames, changePassword, deleteUser, setErrMsg, errMsg, setSuccess, success } = useContext(UserContext)
+    const { firstName, lastName, email, changeUsernames, changePassword, changeEmail, deleteUser, setErrMsg, errMsg, setSuccess, success } = useContext(UserContext)
 
     const [firstNameTemp, setFirstNameTemp] = useState(firstName)
     const [lastNameTemp, setLastNameTemp] = useState(lastName)
@@ -85,7 +85,7 @@ function UserSettings() {
                             className="small-button"
                             style={{ backgroundColor: "rgb(191, 244, 174)" }}
                             type="button"
-                        // onClick={() => handleDelete(index)}
+                            onClick={() => changeEmail(emailTemp)}
                         >
                             ✓
                         </button>}

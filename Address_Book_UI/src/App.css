@@ -165,3 +165,10 @@ select {
 .search-form {
   width: 100%;
 }
+
+.checkbox {
+  width: 1rem !important;
+  height: 1rem;
+  margin: auto 5px auto 0 !important;
+
+}

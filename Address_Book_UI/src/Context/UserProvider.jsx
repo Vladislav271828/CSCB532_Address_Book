@@ -6,6 +6,7 @@ const UserContext = createContext({});
 const FETCH_USER_URL = '/user-profile/get-profile'
 
 const CHANGE_PASSWORD_URL = "/user-profile/change-password"
+const CHANGE_EMAIL_URL = "/user-profile/update-email-request"
 const CHANGE_USERNAMES_URL = "/user-profile/update-user-names"
 const DELETE_USER_URL = "user-profile/delete-user-profile"
 
@@ -14,6 +15,7 @@ export const UserProvider = ({ children }) => {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("");
+    const [adminCheck, setAdminCheck] = useState(false)
 
     const [errMsg, setErrMsg] = useState('');
     const [success, setSuccess] = useState(false);
@@ -29,7 +31,7 @@ export const UserProvider = ({ children }) => {
             setLastName(response.data.lastName);
             setEmail(response.data.email);
             setRole(response.data.role);
-            console.log(auth);
+            response.data.role == "ADMIN" && console.log(auth);
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('Unable to connect to server.');
@@ -90,6 +92,30 @@ export const UserProvider = ({ children }) => {
         }
     }
 
+    const changeEmail = async (emailNew) => {
+        setSuccess(false)
+        setErrMsg("")
+        try {
+            await axios.post(CHANGE_EMAIL_URL,
+                JSON.stringify({ email: emailNew }),
+                {
+                    headers: { "Authorization": `Bearer ${auth}`, 'Content-Type': 'application/json' }
+                });
+            setSuccess(true)
+            setErrMsg("A verification email was sent to " + email + ".")
+        } catch (err) {
+            if (!err?.response) {
+                setErrMsg('Unable to connect to server.');
+            } else if (err.response.status == 401) {
+                alert("Token expired, please login again.");
+                location.reload();
+            }
+            else {
+                setErrMsg(err.response.data.message);
+            }
+        }
+    }
+
     const deleteUser = async () => {
         try {
             await axios.delete(DELETE_USER_URL, {
@@ -112,7 +138,7 @@ export const UserProvider = ({ children }) => {
     }
 
     return (
-        <UserContext.Provider value={{ firstName, lastName, email, role, fetchUser, changeUsernames, changePassword, deleteUser, setErrMsg, errMsg, setSuccess, success }}>
+        <UserContext.Provider value={{ adminCheck, setAdminCheck, firstName, lastName, email, role, fetchUser, changeUsernames, changePassword, changeEmail, deleteUser, setErrMsg, errMsg, setSuccess, success }}>
             {children}
         </UserContext.Provider>
     )

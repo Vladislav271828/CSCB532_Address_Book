@@ -18,8 +18,8 @@ function Settings() {
                 <Link to="./labels">
                     <li>Labels</li>
                 </Link>
-                <Link to="./import-export">
-                    <li>Import/Export</li>
+                <Link to="./export">
+                    <li>Export Contacts</li>
                 </Link>
                 <Link to="./queries">
                     <li>Queries</li>

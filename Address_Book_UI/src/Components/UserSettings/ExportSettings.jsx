@@ -1,14 +1,17 @@
 import { useContext, useState } from "react"
 import AuthContext from "../../Context/AuthProvider";
 import axios from "../../API/axios";
+import UserContext from "../../Context/UserProvider";
 
 const FETCH_FILE_URL = "contact/export/"
+const FETCH_FILE_ADMIN_URL = "/admin/export-as-admin/"
 
-function ImportExportSettings() {
+function ExportSettings() {
     const [format, setFormat] = useState("csv")
     const [errMsg, setErrMsg] = useState("")
 
     const { auth } = useContext(AuthContext);
+    const { role, adminCheck, setAdminCheck } = useContext(UserContext);
 
     const fetchFile = async () => {
         setErrMsg("")
@@ -16,7 +19,7 @@ function ImportExportSettings() {
             //doesn't seem to work unless I use this syntax
             const response = await axios({
                 method: 'get',
-                url: FETCH_FILE_URL + format,
+                url: ((adminCheck) ? FETCH_FILE_ADMIN_URL : FETCH_FILE_URL) + format,
                 headers: {
                     "Authorization": `Bearer ${auth}`
                 },
@@ -47,15 +50,15 @@ function ImportExportSettings() {
         <div className="main-container">
             <div className="main-header-container">
                 <h2 className='main-header-text'>
-                    Import/Export
+                    Export Contacts
                 </h2>
             </div>
             <hr style={{ marginTop: "20px" }} />
             {errMsg == "" ? <></> : <p className='login-form-text' style={{ color: "red", marginTop: "10px" }}>{errMsg}</p>}
             <div className="user-settings-form">
                 <h3>Export Contacts</h3>
+                <p>File Format: </p>
                 <div>
-                    <p>File Format: </p>
                     <select
                         name='format'
                         value={format}
@@ -73,9 +76,15 @@ function ImportExportSettings() {
                         ✓
                     </button>
                 </div>
+                {(role == "ADMIN") && <div><input
+                    className="checkbox"
+                    type="checkbox"
+                    onChange={() => setAdminCheck(!adminCheck)}
+                    checked={adminCheck} /><p>Admin Export</p></div>
+                }
             </div>
         </div>
     )
 }
 
-export default ImportExportSettings
+export default ExportSettings

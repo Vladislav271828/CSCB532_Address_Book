@@ -1,10 +1,6 @@
 import trash from "../../Icons/trash.png";
-import { useContext } from "react"
-import LabelContext from "../../Context/LabelProvider";
 
 const LabelField = ({ setLabels, labels, setDeletedLabels, deletedLabels }) => {
-
-    const { labelsTemp, setLabelsTemp } = useContext(LabelContext);
 
     const handleFormChange = (event, index) => {
         let data = [...labels];
@@ -15,40 +11,42 @@ const LabelField = ({ setLabels, labels, setDeletedLabels, deletedLabels }) => {
     const handleDelete = (index) => {
         if (labels[index]?.id)
             setDeletedLabels([...deletedLabels, labels[index].id])
-
-        let data = [...labels];
-        data.splice(index, 1);
-        setLabels(data);
-
-        let dataTemp = [...labelsTemp];
-        dataTemp.splice(index, 1);
-        setLabelsTemp(dataTemp);
+        else {
+            let data = [...labels];
+            data.splice(index, 1);
+            setLabels(data);
+        }
     }
 
     return (
         <>{labels.map((form, index) => {
+            const isDeleted = deletedLabels.includes(form?.id);
             return (
-                <div key={index}>
+                <div key={index}
+                    style={isDeleted ? { opacity: "50%" } : {}}>
                     <input
                         name='name'
                         onChange={event => handleFormChange(event, index)}
                         placeholder="Label Name"
                         value={form?.name}
+                        disabled={isDeleted}
                     />
                     <select
                         name='colorRGB'
                         value={form?.colorRGB}
+                        disabled={isDeleted}
                         onChange={event => handleFormChange(event, index)}>
                         <option value="255, 255, 255">White</option>
                         <option value="244, 191, 174">Red</option>
                         <option value="191, 244, 174">Green</option>
                         <option value="174, 191, 244">Blue</option>
-                        <option value="191, 174, 244">Purple</option>
+                        <option value="191, 161, 244">Purple</option>
                     </select>
                     <button
                         className="small-button"
                         type="button"
-                        style={{ backgroundColor: "rgb(244, 191, 174)" }}
+                        style={!isDeleted ? { backgroundColor: "rgb(244, 191, 174)" } : {}}
+                        disabled={isDeleted}
                         onClick={() => handleDelete(index)}>
                         <img src={trash}
                             loading="eager"

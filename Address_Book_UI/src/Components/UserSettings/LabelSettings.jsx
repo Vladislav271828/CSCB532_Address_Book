@@ -10,7 +10,7 @@ const UPDATE_LABEL_URL = '/label/update-label/'
 const DELETE_LABEL_URL = '/label/delete-label/'
 
 function LabelSettings() {
-    const { labels, setLabels, fetchLabels, error, setErr, isLoading, labelsTemp, setLabelsTemp } = useContext(LabelContext);
+    const { labels, setLabels, fetchLabels, error, setErr, isLoading, labelsTemp } = useContext(LabelContext);
     const [newLabels, setNewLabels] = useState([])
     const [deletedLabels, setDeletedLabels] = useState([])
     const navigate = useNavigate();
@@ -93,23 +93,33 @@ function LabelSettings() {
         e.preventDefault();
 
         try {
-            const updateLabelsPromise = labels.map(async (label, index) => {
-                if (label.name == "") {
+            newLabels.map(newLabel => {
+                if (newLabel.name == "") {
                     setErr("Label names cannot be blank.");
                     throw "Label names cannot be blank.";
                 }
-                if (label.name != labelsTemp[index].name || label.colorRGB != labelsTemp[index].colorRGB) {
-                    await updateLabel(label)
-                }
+                labels.map(label => {
+                    if (label.name == "") {
+                        setErr("Label names cannot be blank.");
+                        throw "Label names cannot be blank.";
+                    }
+                    if (label.name == newLabel.name) {
+                        setErr(`The label name ${label.name} is already in use.`)
+                        throw `The label name ${label.name} is already in use.`
+                    }
+                })
+            })
 
+            const updateLabelsPromise = labels.map(async (label, index) => {
+                if (!deletedLabels.includes(label.id)) {
+                    if (label.name != labelsTemp[index].name || label.colorRGB != labelsTemp[index].colorRGB) {
+                        await updateLabel(label)
+                    }
+                }
             });
             await Promise.all(updateLabelsPromise);
 
             const newLabelsPromise = newLabels.map(async (label) => {
-                if (label.name == "") {
-                    setErr("Label names cannot be blank.");
-                    throw "Label names cannot be blank.";
-                }
                 await createLabel(label)
             });
             await Promise.all(newLabelsPromise);

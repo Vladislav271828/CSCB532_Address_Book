@@ -13,7 +13,7 @@ function Login() {
     const [errMsg, setErrMsg] = useState('');
     // const [success, setSuccess] = useState(false);
 
-    const { setAuth, auth } = useContext(AuthContext);
+    const { setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -33,6 +33,8 @@ function Login() {
             if (!err?.response) {
                 setErrMsg('Unable to connect to server.');
             }
+            if (err.response.data.message.includes("User is not verified"))
+                setErrMsg(err.response.data.message);
             else {
                 setErrMsg('Invalid email or password.');
             }

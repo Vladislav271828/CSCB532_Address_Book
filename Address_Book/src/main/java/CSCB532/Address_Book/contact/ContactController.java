@@ -48,7 +48,7 @@ public class ContactController {
 
     }
 
-    @GetMapping("/search-contact")
+    @PostMapping("/search-contact")
     public ResponseEntity<List<DtoContact>> searchContact(
             @RequestBody DtoContact dtoContact) {
 
