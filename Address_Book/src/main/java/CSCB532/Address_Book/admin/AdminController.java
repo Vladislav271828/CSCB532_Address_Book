@@ -24,7 +24,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllContactsAsAdmin());
     }
 
-    @GetMapping("/search-contact-as-admin")
+    @PostMapping("/search-contact-as-admin")
     public ResponseEntity<List<DtoContact>> searchContact(
             @RequestBody DtoContact dtoContact) {
 
@@ -53,6 +53,7 @@ public class AdminController {
             return new ResponseEntity<>("Error exporting contacts to JSON", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @CrossOrigin
     @GetMapping("/export-as-admin/excel")
     public ResponseEntity<byte[]> exportContactsToExcel() {

@@ -25,7 +25,7 @@ export const LabelProvider = ({ children }) => {
             setErr(null);
             setIsLoading(false);
         } catch (err) {
-            if (!err?.response.data?.message) {
+            if (!err?.response) {
                 setErr('Unable to connect to server.');
             }
             else if (err.response.status == 401) {

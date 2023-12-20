@@ -11,7 +11,8 @@ function ContactDetails() {
 
     return (
         <div className="main-container">
-            <div className="main-header-container">
+            <div className="main-header-container"
+                style={{ backgroundColor: `rgb(${contact?.label?.colorRGB})`, paddingBottom: "15px" }}>
                 <h2 className='main-header-text'>
                     Contact Details
                 </h2>
@@ -23,7 +24,7 @@ function ContactDetails() {
                     </button>
                 </Link>
             </div>
-            <hr style={{ marginTop: "15px" }} />
+            <hr />
 
             {(!contact) ? <Navigate to=".." replace={true} /> : <>
                 <div className="contact-info-field-container">

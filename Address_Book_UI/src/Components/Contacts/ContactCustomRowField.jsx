@@ -31,9 +31,11 @@ const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows
                             onChange={event => handleFormChange(event, index)}
                             placeholder="Field Name"
                             value={form?.customName}
+                            required
                         />
                         <button
                             className="small-button delete-row"
+                            type="button"
                             onClick={() => handleDelete(index)}>
                             <img src={trash}
                                 loading="eager"
@@ -42,6 +44,7 @@ const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows
                     </div>
                     <input
                         name='customField'
+                        required
                         onChange={event => handleFormChange(event, index)}
                         value={form?.customField}
                     />

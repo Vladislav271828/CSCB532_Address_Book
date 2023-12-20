@@ -17,14 +17,23 @@
 }
 
 .label-container p {
-    margin-top: 5vh;
+    margin-top: 2.5vh;
 }
 
-.label-container div,
+.label-container div {
+    width: 100%;
+    padding: 20px 25px 0px 30px;
+    display: flex;
+}
+
 .query-container div {
     width: 100%;
     padding: 20px 25px 0px 30px;
     display: flex;
+}
+
+.admin+div {
+    padding-top: 5px;
 }
 
 .user-settings-form {
@@ -40,6 +49,30 @@
 .query-container select {
     width: 100%;
     margin: 0px 10px 0px 0px;
+}
+
+.table-container {
+    overflow-x: scroll;
+    margin: 20px 25px 0px 30px;
+    border-radius: 6px;
+
+}
+
+.table-container table {
+    width: 100%;
+    overflow: scroll;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.table-container th {
+    background-color: #eaeaea;
+}
+
+.table-container th,
+.table-container td {
+    text-align: left;
+    padding: 8px;
 }
 
 .user-settings-form button {
@@ -99,4 +132,9 @@
 
 .delete-user-button:hover {
     outline: 2px solid #464646;
+}
+
+/* query page first name last name container */
+.qfnln form:first-child {
+    margin-right: 10px !important;
 }

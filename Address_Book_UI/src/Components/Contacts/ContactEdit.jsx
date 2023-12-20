@@ -56,7 +56,7 @@ function ContactEdit() {
                 headers: { "Authorization": `Bearer ${auth}` }
             });
         } catch (err) {
-            if (!err?.response.data?.message) {
+            if (!err?.response) {
                 console.log(err);
             }
             else {
@@ -77,7 +77,7 @@ function ContactEdit() {
             setCustomRowTemp([...customRowTemp, response])
 
         } catch (err) {
-            if (!err?.response.data?.message) {
+            if (!err?.response) {
                 console.log(err);
             }
             else {
@@ -97,7 +97,7 @@ function ContactEdit() {
             const listCustomRow = customRowTemp.map((item) => item.id == id ? response.data : item);
             setCustomRowTemp(listCustomRow)
         } catch (err) {
-            if (!err?.response.data?.message) {
+            if (!err?.response) {
                 console.log(err);
             }
             else {
@@ -117,7 +117,7 @@ function ContactEdit() {
             setCustomRowTemp(rows);
 
         } catch (err) {
-            if (!err?.response.data?.message) {
+            if (!err?.response) {
                 console.log(err);
             }
             else {
@@ -138,25 +138,14 @@ function ContactEdit() {
             }
 
             const updateRowsPromise = customRows.map(async (row, index) => {
-                if (row.customName || row.customField) {
-                    if (row.customName != customRowTemp[index].customName || row.customField != customRowTemp[index].customField) {
-                        const name = (row.customName) ? row.customName : "Custom Field"
-                        const field = (row.customField) ? row.customField : "Empty"
-                        await updateCustomRow(name, field, row.id)
-                    }
-                }
-                else {
-                    await deleteCustomRowFunc(row.id)
+                if (row.customName != customRowTemp[index].customName || row.customField != customRowTemp[index].customField) {
+                    await updateCustomRow(row.customName, row.customField, row.id)
                 }
             });
             await Promise.all(updateRowsPromise);
 
             const newRowsPromise = newCustomRows.map(async (row) => {
-                if (row.customName || row.customField) {
-                    const name = (row.customName) ? row.customName : "Custom Field"
-                    const field = (row.customField) ? row.customField : "Empty"
-                    await createCustomRow(name, field)
-                }
+                await createCustomRow(row.customName, row.customField)
             });
             await Promise.all(newRowsPromise);
 
@@ -176,9 +165,8 @@ function ContactEdit() {
             setContacts(listContacts);
             navigate("..", { relative: "path" });
         } catch (err) {
-            if (!err?.response.data?.message) {
+            if (!err?.response) {
                 setErrMsg('Unable to connect to server.');
-                console.log(err);
             }
             else if (err.response.status == 401) {
                 alert("Token expired, please login again.");
@@ -198,7 +186,7 @@ function ContactEdit() {
                 });
                 navigate("/", { replace: true });
             } catch (err) {
-                if (!err?.response.data?.message) {
+                if (!err?.response) {
                     setErrMsg('Unable to connect to server.');
                 }
                 else if (err.response.status == 401) {
