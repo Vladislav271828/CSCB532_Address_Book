@@ -6,6 +6,9 @@ import CSCB532.Address_Book.contact.ContactRepository;
 import CSCB532.Address_Book.contact.ContactService;
 import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.exception.BadRequestException;
+import CSCB532.Address_Book.label.DtoLabel;
+import CSCB532.Address_Book.label.Label;
+import CSCB532.Address_Book.label.LabelRepository;
 import CSCB532.Address_Book.user.Role;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +34,7 @@ public class AdminService {
     private final AuthenticationService authenticationService;
     private final ContactService contactService;
     private final ContactRepository contactRepository;
+    private final LabelRepository labelRepository;
 
     private void checkIfUserIsAdmin() {
         if (!authenticationService.getCurrentlyLoggedUser().getRole().equals(Role.ADMIN)) {
@@ -176,6 +180,28 @@ public class AdminService {
 
         return userContacts.stream()
                 .map(contact -> modelMapper.map(contact, DtoContact.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<DtoContact> getContactsWithLabel(Integer labelId){
+
+        List<Contact> userContacts = contactRepository.findAllWithLabelId(labelId);
+
+        ModelMapper modelMapper = new ModelMapper();
+
+        return userContacts.stream()
+                .map(contact -> modelMapper.map(contact, DtoContact.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<DtoLabel> getAllLabels() {
+        checkIfUserIsAdmin();
+        List<Label> userLabels = labelRepository.findAll();
+
+        ModelMapper modelMapper = new ModelMapper();
+
+        return userLabels.stream()
+                .map(label -> modelMapper.map(label, DtoLabel.class))
                 .collect(Collectors.toList());
     }
 }

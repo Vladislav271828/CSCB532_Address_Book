@@ -104,14 +104,18 @@ public class ContactController {
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.xlsx");
             return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
         } catch (IOException e) {
-            // Handle exception appropriately, e.g., return an error response
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/get-contacts-with-most-common-label-as-user")
     public ResponseEntity<List<DtoContact>> getContactsWithMostCommonLabel() {
-
         return ResponseEntity.ok(contactService.getContactsWithMostCommonLabelByUserId());
+    }
+
+    @GetMapping("/get-contacts-with-label/{labelId}")
+    public ResponseEntity<List<DtoContact>> getContactsWithLabel(
+            @PathVariable Integer labelId) {
+        return ResponseEntity.ok(contactService.getContactsWithLabel(labelId));
     }
 }

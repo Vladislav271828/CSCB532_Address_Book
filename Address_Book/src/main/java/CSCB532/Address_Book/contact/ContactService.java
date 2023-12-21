@@ -354,7 +354,18 @@ public class ContactService {
 
         return userContacts.stream()
                 .map(contact -> modelMapper.map(contact, DtoContact.class))
+                .toList();
+    }
+
+    public List<DtoContact> getContactsWithLabel(Integer labelId){
+        List<Contact> userContacts = contactRepository.findAllWithLabelId(labelId);
+
+        ModelMapper modelMapper = new ModelMapper();
+
+        return userContacts.stream()
+                .map(contact -> modelMapper.map(contact, DtoContact.class))
                 .collect(Collectors.toList());
+
     }
 
 }

@@ -1,6 +1,7 @@
 package CSCB532.Address_Book.admin;
 
 import CSCB532.Address_Book.contact.DtoContact;
+import CSCB532.Address_Book.label.DtoLabel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -73,5 +74,17 @@ public class AdminController {
     public ResponseEntity<List<DtoContact>> getContactsWithMostCommonLabel() {
 
         return ResponseEntity.ok(adminService.getContactsWithMostCommonLabel());
+    }
+
+    @GetMapping("/get-contacts-with-label-as-admin/{labelId}")
+    public ResponseEntity<List<DtoContact>> getContactsWithLabel(
+            @PathVariable Integer labelId) {
+        return ResponseEntity.ok(adminService.getContactsWithLabel(labelId));
+    }
+
+    @GetMapping("/get-all-labels-as-admin")
+    public ResponseEntity<List<DtoLabel>> getAllLabels() {
+
+        return ResponseEntity.ok(adminService.getAllLabels());
     }
 }
