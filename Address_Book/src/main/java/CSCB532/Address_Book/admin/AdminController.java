@@ -55,11 +55,11 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/import-as-admin/json")
-    public ResponseEntity<String> importContacts(@RequestBody String json) throws JsonProcessingException {
-        adminService.importContactsFromJSON(json);
-        return ResponseEntity.ok("Contacts imported successfully.");
-    }
+//    @PostMapping("/import-as-admin/json")
+//    public ResponseEntity<String> importContacts(@RequestBody String json) throws JsonProcessingException {
+//        adminService.importContactsFromJSON(json);
+//        return ResponseEntity.ok("Contacts imported successfully.");
+//    }
 
 //    @CrossOrigin
 //    @GetMapping("/export-as-admin/excel")
