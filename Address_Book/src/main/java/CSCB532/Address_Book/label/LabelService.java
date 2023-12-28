@@ -10,6 +10,7 @@ import CSCB532.Address_Book.exception.DatabaseException;
 import CSCB532.Address_Book.exception.LabelNotFoundException;
 import CSCB532.Address_Book.user.User;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Lazy
 public class LabelService {
     private final AuthenticationService authenticationService;
     private final LabelRepository labelRepository;
@@ -181,7 +183,7 @@ public class LabelService {
 
         //remove the label from existing contacts
         List<Contact> contacts = contactRepository.findAllWithLabelId(labelId);
-        contacts.forEach(contact -> contactService.RemoveLabelFromContact(contact.getId()));
+        contacts.forEach(contact -> contactService.RemoveLabelFromContact(contact.getId(), labelId));
 
 
         Label label = labelRepository.findById(labelId)

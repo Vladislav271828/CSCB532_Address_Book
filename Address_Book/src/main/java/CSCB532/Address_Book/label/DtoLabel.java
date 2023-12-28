@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DtoLabel {
     private Integer id;
+    private Integer priority;
     @NotBlank(message = "The name of the label must not be null and must contain at least one character.")
     private String name;
     @NotBlank(message = "The color of the label must not be null and must contain a valid rgb patterned color representation.")
