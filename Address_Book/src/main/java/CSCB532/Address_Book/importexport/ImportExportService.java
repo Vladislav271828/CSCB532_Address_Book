@@ -14,15 +14,22 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.rmi.server.ExportException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +47,7 @@ public class ImportExportService {
         // Convert contacts to CSV format
         StringBuilder csvContent = new StringBuilder();
         // Write the header
-        csvContent.append("Name,Last Name,Phone Number,Name of Company,Address,Email,Fax,Mobile Number,Comment,Label,Custom Rows\n");
+        csvContent.append("Name,Last Name,Phone Number,Name of Company,Address,Email,Fax,Mobile Number,Comment,Labels,Custom Rows\n");
 
         // Write each contact to the CSV file
         for (DtoContact contact : allContacts) {
@@ -83,8 +90,10 @@ public class ImportExportService {
                         contact.setMobileNumber(record[7]);
                         contact.setComment(record[8]);
 
+                        String labelsAsString = record[9];
+                        List<DtoLabel> labels = parseLabels(labelsAsString);
+                        contact.setLabels(labels);
 
-                        // Set custom rows (assuming they are in the 10th column)
                         String customRowsAsString = record[10];
                         List<DtoCustomRow> customRows = parseCustomRows(customRowsAsString);
                         contact.setCustomRows(customRows);
@@ -94,8 +103,7 @@ public class ImportExportService {
                     })
                     .toList();
 
-            contactsToImport.forEach(contactService::createContact);
-            System.out.println(contactsToImport);
+            importContactList(contactsToImport);
         } catch (IOException | CsvException e) {
             throw new ImportException("Error importing contacts from CSV: " + e.getMessage(), e);
         }
@@ -106,9 +114,7 @@ public class ImportExportService {
         StringBuilder customRowsString = new StringBuilder();
 
         if (customRows != null && !customRows.isEmpty()) {
-            for (DtoCustomRow customRow : customRows) {
-                customRowsString.append(customRow.getCustomName()).append(": ").append(customRow.getCustomField()).append("; ");
-            }
+            customRows.forEach(customRow -> customRowsString.append(customRow.getCustomName()).append(": ").append(customRow.getCustomField()).append("; "));
             // Remove the trailing comma and space
             customRowsString.setLength(customRowsString.length() - 2);
         }
@@ -118,9 +124,14 @@ public class ImportExportService {
 
     @Transactional
     public String convertLabelsToString(List<DtoLabel> labels) {
-        return labels.stream()
-                .map(DtoLabel::getName)
-                .collect(Collectors.joining(", "));
+        StringBuilder labelsString = new StringBuilder();
+
+        if (labels != null && !labels.isEmpty()) {
+            labels.forEach(customRow -> labelsString.append(customRow.getName()).append(": ").append(customRow.getColorRGB()).append("; "));
+            // Remove the trailing comma and space
+            labelsString.setLength(labelsString.length() - 2);
+        }
+        return labelsString.toString();
     }
 
     private List<DtoCustomRow> parseCustomRows(String customRowsAsString) {
@@ -145,6 +156,30 @@ public class ImportExportService {
         }
 
         return customRows;
+    }
+
+    private List<DtoLabel> parseLabels(String labelsAsString) {
+        List<DtoLabel> labels = new ArrayList<>();
+
+        if (labelsAsString != null && !labelsAsString.isEmpty()) {
+            String[] customRowEntries = labelsAsString.split("; ");
+
+            for (String entry : customRowEntries) {
+                String[] parts = entry.split(": ");
+                if (parts.length == 2) {
+                    String customName = parts[0].trim();
+                    String color = parts[1].trim();
+
+                    DtoLabel dtoLabel = new DtoLabel();
+                    dtoLabel.setName(customName);
+                    dtoLabel.setColorRGB(color);
+
+                    labels.add(dtoLabel);
+                }
+            }
+        }
+
+        return labels;
     }
 
     @Transactional
@@ -176,76 +211,119 @@ public class ImportExportService {
         } catch (JsonProcessingException e) {
             throw new ImportException("Error importing contacts from JSON: " + e.getMessage(), e);
         }
+        importContactList(importedContacts);
+    }
 
+    private void importContactList(List<DtoContact> importedContacts){
         importedContacts.forEach(dtoContact -> {
             DtoContact contact = contactService.createContact(dtoContact);
-            dtoContact.getCustomRows().forEach(customRowService::createCustomRow);
+            dtoContact.getCustomRows().forEach(dtoCustomRow -> {
+                dtoCustomRow.setContactId(contact.getId());
+                customRowService.createCustomRow(dtoCustomRow);
+            });
             dtoContact.getLabels().forEach(dtoLabel -> {
                 if (labelService.getAllLabelsForLoggedInUser().contains(dtoLabel)){
-                    dtoLabel.setName(dtoLabel.getName() + "-2");
+                    //dtoLabel.setName(dtoLabel.getName() + "-2");
+                    Integer labelId = labelService.getAllLabelsForLoggedInUser().stream()
+                            .filter(label -> dtoLabel.getName().equals(label.getName()))
+                            .toList().get(0).getId();
+                    contactService.addLabelToContact(contact.getId(), labelId);
                 }
-                DtoLabel label = labelService.createLabel(dtoLabel);
-                contactService.addLabelToContact(contact.getId(), label.getId());
+                else {
+                    DtoLabel label = labelService.createLabel(dtoLabel);
+                    contactService.addLabelToContact(contact.getId(), label.getId());
+                }
             });
-
         });
     }
 
 
-//    @Transactional
-//    public byte[] exportAllContactsToExcel() throws IOException {
-//        List<DtoContact> allContacts = getAllContactsForLoggedInUser();
-//
-//        try (Workbook workbook = new XSSFWorkbook()) {
-//            Sheet sheet = workbook.createSheet("Contacts");
-//
-//            // Write the header
-//            Row headerRow = sheet.createRow(0);
-//            String[] headerData = {"Name", "Last Name", "Phone Number", "Name of Company", "Address", "Email", "Fax",
-//                    "Mobile Number", "Comment", "Label", "Custom Rows"};
-//            for (int i = 0; i < headerData.length; i++) {
-//                Cell cell = headerRow.createCell(i);
-//                cell.setCellValue(headerData[i]);
-//            }
-//
-//            // Write each contact to the Excel file
-//            int rowNum = 1;
-//            for (DtoContact contact : allContacts) {
-//                Row row = sheet.createRow(rowNum++);
-//
-//                row.createCell(0).setCellValue(contact.getName());
-//                row.createCell(1).setCellValue(contact.getLastName());
-//                row.createCell(2).setCellValue(contact.getPhoneNumber());
-//                row.createCell(3).setCellValue(contact.getNameOfCompany());
-//                row.createCell(4).setCellValue(contact.getAddress());
-//                row.createCell(5).setCellValue(contact.getEmail());
-//                row.createCell(6).setCellValue(contact.getFax());
-//                row.createCell(7).setCellValue(contact.getMobileNumber());
-//                row.createCell(8).setCellValue(contact.getComment());
-//
-//                Cell labelCell = row.createCell(9);
-//                labelCell.setCellValue(contact.getLabel() != null ? contact.getLabel().getName() : "null");
-//
-//                Cell customRowsCell = row.createCell(10);
-//                customRowsCell.setCellValue(getCustomRowsAsString(contact.getCustomRows()));
-//            }
-//
-//            // Save the workbook content to a ByteArrayOutputStream
-//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//            workbook.write(outputStream);
-//            return outputStream.toByteArray();
-//        }
-//    }
+    @Transactional
+    public byte[] exportAllContactsToExcel() throws IOException {
+        List<DtoContact> allContacts = contactService.getAllContactsForLoggedInUser();
 
-//    @Transactional
-//    public List<DtoContact> getContactsWithMostCommonLabelByUserId(){
-//        User user = authenticationService.getCurrentlyLoggedUser();
-//        List<Contact> userContacts = contactRepository.findAllWithMostCommonLabelByUserId(user.getId());
-//
-//        ModelMapper modelMapper = new ModelMapper();
-//
-//        return userContacts.stream()
-//                .map(contact -> modelMapper.map(contact, DtoContact.class))
-//                .toList();
-//    }
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Contacts");
+
+            // Write the header
+            Row headerRow = sheet.createRow(0);
+            String[] headerData = {"Name", "Last Name", "Phone Number", "Name of Company", "Address", "Email", "Fax",
+                    "Mobile Number", "Comment", "Labels", "Custom Rows"};
+            for (int i = 0; i < headerData.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headerData[i]);
+            }
+
+            // Write each contact to the Excel file
+            int rowNum = 1;
+            for (DtoContact contact : allContacts) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(contact.getName());
+                row.createCell(1).setCellValue(contact.getLastName());
+                row.createCell(2).setCellValue(contact.getPhoneNumber());
+                row.createCell(3).setCellValue(contact.getNameOfCompany());
+                row.createCell(4).setCellValue(contact.getAddress());
+                row.createCell(5).setCellValue(contact.getEmail());
+                row.createCell(6).setCellValue(contact.getFax());
+                row.createCell(7).setCellValue(contact.getMobileNumber());
+                row.createCell(8).setCellValue(contact.getComment());
+
+                Cell labelCell = row.createCell(9);
+                labelCell.setCellValue(convertLabelsToString(contact.getLabels()));
+
+                Cell customRowsCell = row.createCell(10);
+                customRowsCell.setCellValue(getCustomRowsAsString(contact.getCustomRows()));
+            }
+
+            // Save the workbook content to a ByteArrayOutputStream
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        }
+    }
+
+    @Transactional
+    public void importContactsFromExcel(byte[] excelData) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelData))) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            // Skip the header row
+            if (rowIterator.hasNext()) {
+                rowIterator.next();
+            }
+            List<DtoContact> importedContacts = new ArrayList<>();
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+
+                DtoContact dtoContact = new DtoContact();
+                dtoContact.setName(getStringCellValue(row.getCell(0)));
+                dtoContact.setLastName(getStringCellValue(row.getCell(1)));
+                dtoContact.setPhoneNumber(getStringCellValue(row.getCell(2)));
+                dtoContact.setNameOfCompany(getStringCellValue(row.getCell(3)));
+                dtoContact.setAddress(getStringCellValue(row.getCell(4)));
+                dtoContact.setEmail(getStringCellValue(row.getCell(5)));
+                dtoContact.setFax(getStringCellValue(row.getCell(6)));
+                dtoContact.setMobileNumber(getStringCellValue(row.getCell(7)));
+                dtoContact.setComment(getStringCellValue(row.getCell(8)));
+
+                // Process labels and custom rows accordingly
+                 dtoContact.setLabels(parseLabels(getStringCellValue(row.getCell(9))));
+                 dtoContact.setCustomRows(parseCustomRows(getStringCellValue(row.getCell(10))));
+
+                importedContacts.add(dtoContact);
+            }
+            importContactList(importedContacts);
+        }
+    }
+
+    private String getStringCellValue(Cell cell) {
+        if (cell != null) {
+            return cell.getStringCellValue();
+        }
+        return null;
+    }
+
 }

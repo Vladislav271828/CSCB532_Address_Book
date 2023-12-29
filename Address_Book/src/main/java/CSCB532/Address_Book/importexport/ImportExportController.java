@@ -4,7 +4,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.rmi.server.ExportException;
 @RestController
 @RequestMapping("/api/v1/")
@@ -50,18 +52,29 @@ public class ImportExportController {
         return ResponseEntity.ok("Contacts imported successfully.");
     }
 
+    @CrossOrigin
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportContactsToExcel() {
+        try {
+            byte[] excelContent = importExportService.exportAllContactsToExcel();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.xlsx");
+            return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-//    @CrossOrigin
-//    @GetMapping("/export/excel")
-//    public ResponseEntity<byte[]> exportContactsToExcel() {
-//        try {
-//            byte[] excelContent = importExportService.exportAllContactsToExcel();
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-//            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.xlsx");
-//            return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
-//        } catch (IOException e) {
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+    @CrossOrigin
+    @PostMapping("/import/excel")
+    public ResponseEntity<String> importContactsFromExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            byte[] excelData = file.getBytes();
+            importExportService.importContactsFromExcel(excelData);
+            return ResponseEntity.ok("Contacts imported successfully.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error importing contacts from Excel: " + e.getMessage());
+        }
+    }
 }
