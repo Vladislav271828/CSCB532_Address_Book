@@ -39,8 +39,17 @@ export const LabelProvider = ({ children }) => {
         }
     }
 
+    const labelsToString = (labels) => {
+        return labels.map((item, index) => {
+            if (index == 0)
+                return <strong style={{ fontWeight: "600" }}>{item.name}</strong>
+            else return <>, {item.name}</>
+        }
+        )
+    }
+
     return (
-        <LabelContext.Provider value={{ labels, setLabels, fetchLabels, setErr, error, isLoading, labelsTemp, setLabelsTemp }}>
+        <LabelContext.Provider value={{ labels, setLabels, fetchLabels, setErr, error, isLoading, labelsTemp, setLabelsTemp, labelsToString }}>
             {children}
         </LabelContext.Provider>
     )

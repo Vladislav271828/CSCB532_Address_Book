@@ -4,10 +4,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import ContactsContext from "../../Context/ContactsProvider";
 import AuthContext from "../../Context/AuthProvider";
 import LabelContext from "../../Context/LabelProvider";
+import ContactEditRows from "./ContactEditRows";
+import ContactEditLabels from "./ContactEditLabels";
 
 import axios from '../../API/axios'
-import trash from "../../Icons/trash.png";
-import ContactEditRows from "./ContactEditRows";
+import trash from "../../Icons/trash.webp";
 
 const UPDATE_CONTACT_URL = "/contact/update-contact/"
 const DELETE_CONTACT_URL = "/contact/delete-contact/"
@@ -32,7 +33,9 @@ function ContactEdit() {
     const [fax, setFax] = useState(contact.fax)
     const [mobileNumber, setMobileNumber] = useState(contact.mobileNumber)
     const [comment, setComment] = useState(contact.comment)
-    const [labelId, setLabelId] = useState((contact.label?.id) ? contact.label.id : "0")
+
+    const [showLabelDropdown, setShowLabelDropdown] = useState(false)
+    const [selectedLabels, setSelectedLabels] = useState([])
 
     const [customRows, setCustomRows] = useState((contact?.customRows) ? contact.customRows : [])
     const [newCustomRows, setNewCustomRows] = useState([])
@@ -48,6 +51,11 @@ function ContactEdit() {
     useEffect(() => {
         fetchLabels();
     }, [])
+
+    const handleFocus = () => {
+        setErrMsg("")
+        setShowLabelDropdown(false)
+    }
 
     const changeLabelOfContact = async (url) => {
         // works only if body is null
@@ -129,13 +137,13 @@ function ContactEdit() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const lastLabelId = (contact.label?.id) ? contact.label.id : "0";
-            if (lastLabelId != labelId) {
-                if (labelId == "0")
-                    await changeLabelOfContact("/contact/" + id + "/remove-label");
-                else
-                    await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
-            }
+            // const lastLabelId = (contact.label?.id) ? contact.label.id : "0";
+            // if (lastLabelId != labelId) {
+            //     if (labelId == "0")
+            //         await changeLabelOfContact("/contact/" + id + "/remove-label");
+            //     else
+            //         await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
+            // }
 
             const updateRowsPromise = customRows.map(async (row, index) => {
                 if (row.customName != customRowTemp[index].customName || row.customField != customRowTemp[index].customField) {
@@ -222,7 +230,7 @@ function ContactEdit() {
                         id="name"
                         defaultValue={name}
                         onChange={(e) => setName(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     />
                 </div>
                 <div>
@@ -231,7 +239,7 @@ function ContactEdit() {
                         id="lastName"
                         defaultValue={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     />
                 </div>
                 <div>
@@ -241,7 +249,7 @@ function ContactEdit() {
                         defaultValue={phoneNumber}
                         required
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Company</h3>
@@ -249,7 +257,7 @@ function ContactEdit() {
                         id="nameOfCompany"
                         defaultValue={nameOfCompany}
                         onChange={(e) => setCompany(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Address</h3>
@@ -257,7 +265,7 @@ function ContactEdit() {
                         id="address"
                         defaultValue={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Email</h3>
@@ -265,7 +273,7 @@ function ContactEdit() {
                         id="email"
                         defaultValue={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Fax</h3>
@@ -273,7 +281,7 @@ function ContactEdit() {
                         id="fax"
                         defaultValue={fax}
                         onChange={(e) => setFax(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Mobile Number</h3>
@@ -281,10 +289,10 @@ function ContactEdit() {
                         id="mobileNumber"
                         defaultValue={mobileNumber}
                         onChange={(e) => setMobileNumber(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
 
-                {/* Label */}
+                {/* OLD Label
                 <div>
                     <h3>Label</h3>
                     <select
@@ -292,10 +300,11 @@ function ContactEdit() {
                         onChange={e => setLabelId(e.target.value)}>
                         <option value="0">None</option>
                         {labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select></div>
+                    </select></div> */}
 
                 {/* Custom Row */}
                 <ContactEditRows
+                    focus={() => handleFocus()}
                     customRows={customRows}
                     setCustomRows={setCustomRows}
                     customRowTemp={customRowTemp}
@@ -305,14 +314,23 @@ function ContactEdit() {
                     deletedCustomRows={deletedCustomRows}
                     setDeletedCustomRows={setDeletedCustomRows} />
 
+                {/* Labels (MULTIPLE) */}
+                <ContactEditLabels
+                    labels={labels}
+                    showLabelDropdown={showLabelDropdown}
+                    setShowLabelDropdown={setShowLabelDropdown}
+                    selectedLabels={selectedLabels}
+                    setSelectedLabels={setSelectedLabels}
+                />
+
                 {/* Comment */}
-                <div className="comment">
+                <div className="one-line-field">
                     <h3>Comment</h3>
                     <textarea
                         id="comment"
                         defaultValue={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                         rows={4} />
                 </div>
 

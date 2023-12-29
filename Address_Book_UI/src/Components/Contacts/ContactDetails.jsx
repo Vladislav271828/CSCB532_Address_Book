@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import ContactsContext from "../../Context/ContactsProvider";
 import { Link, useParams, Navigate } from "react-router-dom";
-import edit from "../../Icons/edit.png";
+import edit from "../../Icons/edit.webp";
 import ContactInfoField from "./ContactInfoField";
 
 function ContactDetails() {
@@ -84,7 +84,7 @@ function ContactDetails() {
                     />
                     {/* Comment */}
                     {(contact?.comment) ?
-                        <div className="comment">
+                        <div className="one-line-field">
                             <ContactInfoField
                                 labelName="Comment"
                                 labelContents={contact?.comment}

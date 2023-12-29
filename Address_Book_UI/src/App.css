@@ -168,7 +168,7 @@ select {
 
 .checkbox {
   width: 1rem !important;
-  height: 1rem;
+  height: 1rem !important;
   margin: auto 5px auto 0 !important;
 
 }

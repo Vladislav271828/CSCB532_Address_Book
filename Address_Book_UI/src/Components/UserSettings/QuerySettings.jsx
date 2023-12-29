@@ -1,8 +1,9 @@
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import UserContext from "../../Context/UserProvider";
 import SearchBar from "../SearchBar";
 import AuthContext from "../../Context/AuthProvider";
 import axios from "../../API/axios";
+import LabelContext from "../../Context/LabelProvider";
 
 const SEARCH_CONTACTS_URL = '/contact/search-contact'
 
@@ -12,12 +13,19 @@ const SEARCH_CONTACTS_ADMIN_URL = '/admin/search-contact-as-admin'
 function QuerySettings() {
     const [showTable, setShowTable] = useState(false)
     const [option, setOption] = useState(0);
+    const [labelId, setLabelId] = useState(1);
     const [name, setName] = useState("");
     const [lastName, setLastName] = useState("");
     const [errMsg, setErrMsg] = useState("")
     const [tableData, setTableData] = useState([]);
+
     const { role, adminCheck, setAdminCheck } = useContext(UserContext);
+    const { labels, fetchLabels } = useContext(LabelContext)
     const { auth } = useContext(AuthContext);
+
+    useEffect(() => {
+        fetchLabels();
+    }, [])
 
     const getAllRecords = async () => {
         try {
@@ -128,6 +136,14 @@ function QuerySettings() {
                         ✓
                     </button>
                 </div>
+                {option == "0" && <div><select
+                    name='option'
+                    disabled={(!labels.length)}
+                    value={labelId}
+                    onChange={e => setLabelId(e.target.value)}
+                >
+                    {(labels.length) ? labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>) : <option>No labels available</option>}
+                </select></div>}
                 {option == "1" && <div>
                     <SearchBar
                         search={name}
@@ -155,26 +171,24 @@ function QuerySettings() {
             <div className="table-container">
                 {showTable && <table>
                     <thead>
-                        {(option != "0") ?
-                            <tr>
-                                <th>ID</th>
-                                <th>First Name</th>
-                                <th>Last Name</th>
-                                <th>Phone Number</th>
-                                <th>Company</th>
-                                <th>Address</th>
-                                <th>Email</th>
-                                <th>Fax</th>
-                                <th>Mobile Number</th>
-                                <th>Label</th>
-                                <th>Comment</th>
-                                <th>Custom Rows</th>
-                            </tr>
-                            : <></>}
+                        <tr>
+                            <th>ID</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Phone Number</th>
+                            <th>Company</th>
+                            <th>Address</th>
+                            <th>Email</th>
+                            <th>Fax</th>
+                            <th>Mobile Number</th>
+                            <th>Label</th>
+                            <th>Comment</th>
+                            <th>Custom Rows</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        {(option != "0") ? tableData.map((row) => (
-                            <tr style={{ backgroundColor: `rgb(${row?.label?.colorRGB})` }}>
+                        {tableData.map((row) => (
+                            <tr key={row.id} style={{ backgroundColor: `rgb(${row?.label?.colorRGB})` }}>
                                 <td>{row?.id}</td>
                                 <td>{row?.name}</td>
                                 <td>{row?.lastName}</td>
@@ -188,7 +202,7 @@ function QuerySettings() {
                                 <td>{row?.comment}</td>
                                 <td style={{ whiteSpace: "pre" }}>{row?.customRows?.map((obj) => `${obj.customName}: ${obj.customField}\n`)}</td>
                             </tr>
-                        )) : <></>}
+                        ))}
                     </tbody>
                 </table>}
             </div>

@@ -1,4 +1,4 @@
-import trash from "../../Icons/trash.png";
+import trash from "../../Icons/trash.webp";
 
 const LabelField = ({ setLabels, labels, setDeletedLabels, deletedLabels }) => {
 

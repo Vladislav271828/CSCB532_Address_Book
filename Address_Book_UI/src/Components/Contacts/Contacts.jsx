@@ -1,4 +1,4 @@
-import gear from "../../Icons/gear.png";
+import gear from "../../Icons/gear.webp";
 import './Contacts.css'
 
 import { useState, useEffect, useContext } from "react";
