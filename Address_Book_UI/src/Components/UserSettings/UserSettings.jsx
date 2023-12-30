@@ -61,6 +61,7 @@ function UserSettings() {
                     />
                     {(firstName != firstNameTemp || lastName != lastNameTemp) &&
                         <button
+                            title="Submit Form"
                             className="small-button"
                             style={{ backgroundColor: "rgb(191, 244, 174)" }}
                             type="button"
@@ -81,7 +82,7 @@ function UserSettings() {
                         onFocus={() => setErrMsg('')}
                     />
                     {(email != emailTemp) &&
-                        <button
+                        <button title="Submit Form"
                             className="small-button"
                             style={{ backgroundColor: "rgb(191, 244, 174)" }}
                             type="button"
@@ -110,7 +111,7 @@ function UserSettings() {
                         onFocus={() => setErrMsg('')}
                     />
 
-                    <button
+                    <button title="Submit Form"
                         className="small-button"
                         style={{ backgroundColor: "rgb(191, 244, 174)" }}
                         type="button"
@@ -140,7 +141,7 @@ function UserSettings() {
                                 onFocus={() => setErrMsg('')}
                             />
 
-                            <button
+                            <button title="Confirm Delete"
                                 className="small-button"
                                 style={{ backgroundColor: "rgb(244, 191, 174)" }}
                                 type="button"

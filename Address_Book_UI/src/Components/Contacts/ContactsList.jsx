@@ -1,22 +1,32 @@
 import { Link } from "react-router-dom";
 
-const ContactsList = ({ contacts }) => {
+const ContactsList = ({ contacts, isLabelSorting }) => {
     const compareFN = (a, b) => {
-        if (!a.label?.name && b.label?.name)
-            return 1;
-        if (!b.label?.name && a.label?.name)
-            return -1;
-
         let result;
-        if (a.label == b.label || a.label?.name == b.label?.name) {
+        if (isLabelSorting) {
+            const aLabelsSorted = a.labels.sort((aL, bL) => aL.name.localeCompare(bL.name)).map((item) => { return item.name }).join('')
+            const bLabelsSorted = b.labels.sort((aL, bL) => aL.name.localeCompare(bL.name)).map((item) => { return item.name }).join('')
+
+            if (aLabelsSorted == bLabelsSorted) {
+                result = a.name.localeCompare(b.name);
+                if (result == 0) {
+                    result = a.lastName.localeCompare(b.lastName);
+                }
+                return result;
+            }
+            if (aLabelsSorted == '') return 1
+            if (bLabelsSorted == '') return -1
+            result = aLabelsSorted.localeCompare(bLabelsSorted)
+            return result;
+        }
+        else {
             result = a.name.localeCompare(b.name);
             if (result == 0) {
                 result = a.lastName.localeCompare(b.lastName);
             }
             return result;
         }
-        result = a.label.name.localeCompare(b.label.name)
-        return result;
+
     }
 
     const convertToCSS = (colorArray) => {
@@ -27,7 +37,8 @@ const ContactsList = ({ contacts }) => {
         <>
             {contacts.sort(compareFN).map((item) => {
 
-                const color = (item?.label != null) ? item.label.colorRGB.split(", ", 3) : [255, 255, 255];
+                const sortedLabels = item.labels.sort((a, b) => a.name.localeCompare(b.name))
+                const color = (sortedLabels.length > 0) ? sortedLabels[0].colorRGB.split(", ", 3) : [255, 255, 255];
                 const hoverColor = color.map((value) => Math.round(value * 0.917));
 
                 return (

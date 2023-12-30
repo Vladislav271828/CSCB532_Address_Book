@@ -68,6 +68,7 @@ function ExportSettings() {
                         <option value="excel">Excel File</option>
                     </select>
                     <button
+                        title="Submit Form"
                         className="small-button"
                         style={{ backgroundColor: "rgb(191, 244, 174)" }}
                         type="button"

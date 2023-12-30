@@ -3,9 +3,11 @@ import ContactsContext from "../../Context/ContactsProvider";
 import { Link, useParams, Navigate } from "react-router-dom";
 import edit from "../../Icons/edit.webp";
 import ContactInfoField from "./ContactInfoField";
+import LabelContext from "../../Context/LabelProvider";
 
 function ContactDetails() {
     const { contacts } = useContext(ContactsContext);
+    const { labelsToString } = useContext(LabelContext)
     const { id } = useParams();
     const contact = contacts.find(contact => (contact.id).toString() === id);
 
@@ -17,7 +19,8 @@ function ContactDetails() {
                     Contact Details
                 </h2>
                 <Link to="edit" >
-                    <button className='small-button'>
+                    <button className='small-button'
+                        title="Edit Contact">
                         <img src={edit}
                             loading="eager"
                             alt="Edit Contact" />
@@ -80,7 +83,7 @@ function ContactDetails() {
                     {/* Label */}
                     <ContactInfoField
                         labelName="Label"
-                        labelContents={(contact?.label) ? contact.label.name : "None"}
+                        labelContents={(contact?.labels.length > 0) ? labelsToString(contact?.labels) : "None"}
                     />
                     {/* Comment */}
                     {(contact?.comment) ?

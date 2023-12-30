@@ -4,9 +4,11 @@ import axios from "../API/axios";
 
 const LabelContext = createContext({});
 const FETCH_LABEL_URL = '/label/get-all-labels'
+const FETCH_ADMIN_LABEL_URL = '/admin/get-all-labels-as-admin'
 
 export const LabelProvider = ({ children }) => {
     const [labels, setLabels] = useState([]);
+    const [adminLabels, setAdminLabels] = useState([]);
     const [error, setErr] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [labelsTemp, setLabelsTemp] = useState([]);
@@ -39,17 +41,38 @@ export const LabelProvider = ({ children }) => {
         }
     }
 
+    const fetchAdminLabels = async () => {
+        try {
+            const response = await axios.get(FETCH_ADMIN_LABEL_URL, {
+                headers: { "Authorization": `Bearer ${auth}` }
+            });
+            const sorted = response.data.sort((a, b) => a.id - b.id)
+            setAdminLabels(sorted);
+        } catch (err) {
+            if (!err?.response) {
+                console.log('Unable to connect to server.');
+            }
+            else if (err.response.status == 401) {
+                alert("Token expired, please login again.");
+                location.reload();
+            }
+            else {
+                console.log(err.response.data.message);
+            }
+        }
+    }
+
     const labelsToString = (labels) => {
-        return labels.map((item, index) => {
+        return labels.sort((a, b) => a.name.localeCompare(b.name)).map((item, index) => {
             if (index == 0)
-                return <strong style={{ fontWeight: "600" }}>{item.name}</strong>
-            else return <>, {item.name}</>
+                return <span key={item.id} style={{ backgroundColor: `rgb(${item.colorRGB})` }}>{item.name}</span>
+            else return <span key={item.id}>, <span style={{ backgroundColor: `rgb(${item.colorRGB})` }}>{item.name}</span></span>
         }
         )
     }
 
     return (
-        <LabelContext.Provider value={{ labels, setLabels, fetchLabels, setErr, error, isLoading, labelsTemp, setLabelsTemp, labelsToString }}>
+        <LabelContext.Provider value={{ labels, setLabels, fetchLabels, setErr, error, isLoading, labelsTemp, setLabelsTemp, labelsToString, fetchAdminLabels, adminLabels }}>
             {children}
         </LabelContext.Provider>
     )

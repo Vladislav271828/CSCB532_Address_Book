@@ -43,6 +43,7 @@ const LabelField = ({ setLabels, labels, setDeletedLabels, deletedLabels }) => {
                         <option value="191, 161, 244">Purple</option>
                     </select>
                     <button
+                        title="Delete Label"
                         className="small-button"
                         type="button"
                         style={!isDeleted ? { backgroundColor: "rgb(244, 191, 174)" } : {}}

@@ -35,6 +35,7 @@ const ContactCustomRowField = ({ focus, setCustomRows, customRows, setDeletedCus
                             required
                         />
                         <button
+                            title="Delete Custom Row"
                             className="small-button delete-row"
                             type="button"
                             onClick={() => handleDelete(index)}>

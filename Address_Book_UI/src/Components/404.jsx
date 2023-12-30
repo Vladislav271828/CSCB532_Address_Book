@@ -17,7 +17,7 @@ function FourOhFour() {
                 maxWidth: "600px"
             }}>The page you are looking for is not available. <Link
                 to="/" replace>
-                    <span>Click here</span>
+                    <span className="spanlink">Click here</span>
                 </Link> to go back to the home page.</p>
         </div >
     )

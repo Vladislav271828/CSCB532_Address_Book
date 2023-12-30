@@ -1,9 +1,8 @@
-import { useState, useContext, useEffect } from "react"
+import { useState, useContext } from "react"
 import { useParams, useNavigate } from "react-router-dom";
 
 import ContactsContext from "../../Context/ContactsProvider";
 import AuthContext from "../../Context/AuthProvider";
-import LabelContext from "../../Context/LabelProvider";
 import ContactEditRows from "./ContactEditRows";
 import ContactEditLabels from "./ContactEditLabels";
 
@@ -19,7 +18,6 @@ const UPDATE_CUSTOM_ROW_URL = "/custom-row/update-custom-row/"
 function ContactEdit() {
     const { auth } = useContext(AuthContext);
     const { contacts, setContacts } = useContext(ContactsContext);
-    const { labels, fetchLabels } = useContext(LabelContext);
 
     const { id } = useParams();
     const contact = contacts.find(contact => (contact.id).toString() === id);
@@ -34,8 +32,10 @@ function ContactEdit() {
     const [mobileNumber, setMobileNumber] = useState(contact.mobileNumber)
     const [comment, setComment] = useState(contact.comment)
 
+    const [contactLabels, setContactLabels] = useState((contact?.labels) ? contact.labels : [])
+    const [addedLabels, setAddedLabels] = useState([])
+    const [removedLabels, setRemovedLabels] = useState([])
     const [showLabelDropdown, setShowLabelDropdown] = useState(false)
-    const [selectedLabels, setSelectedLabels] = useState([])
 
     const [customRows, setCustomRows] = useState((contact?.customRows) ? contact.customRows : [])
     const [newCustomRows, setNewCustomRows] = useState([])
@@ -47,10 +47,6 @@ function ContactEdit() {
 
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
-
-    useEffect(() => {
-        fetchLabels();
-    }, [])
 
     const handleFocus = () => {
         setErrMsg("")
@@ -64,12 +60,7 @@ function ContactEdit() {
                 headers: { "Authorization": `Bearer ${auth}` }
             });
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("changeLabelOfContact: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
@@ -85,12 +76,7 @@ function ContactEdit() {
             setCustomRowTemp([...customRowTemp, response])
 
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("createCustomRow: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
@@ -105,12 +91,7 @@ function ContactEdit() {
             const listCustomRow = customRowTemp.map((item) => item.id == id ? response.data : item);
             setCustomRowTemp(listCustomRow)
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("createCustomRow: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
@@ -125,25 +106,23 @@ function ContactEdit() {
             setCustomRowTemp(rows);
 
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("deleteCustomRow: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // const lastLabelId = (contact.label?.id) ? contact.label.id : "0";
-            // if (lastLabelId != labelId) {
-            //     if (labelId == "0")
-            //         await changeLabelOfContact("/contact/" + id + "/remove-label");
-            //     else
-            //         await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
-            // }
+            const removeLabelsPromise = contact?.labels.map(async (label) => {
+                if (removedLabels.includes(label.id))
+                    await changeLabelOfContact("/contact/" + id + "/remove-label/" + label.id);
+            });
+            await Promise.all(removeLabelsPromise);
+
+            const addLabelsPromise = addedLabels.map(async (labelId) => {
+                await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
+            });
+            await Promise.all(addLabelsPromise);
 
             const updateRowsPromise = customRows.map(async (row, index) => {
                 if (row.customName != customRowTemp[index].customName || row.customField != customRowTemp[index].customField) {
@@ -157,8 +136,8 @@ function ContactEdit() {
             });
             await Promise.all(newRowsPromise);
 
-            const deleteRowsPromise = deletedCustomRows.map(async (id) => {
-                await deleteCustomRowFunc(id)
+            const deleteRowsPromise = deletedCustomRows.map(async (rowid) => {
+                await deleteCustomRowFunc(rowid)
             });
             await Promise.all(deleteRowsPromise);
 
@@ -174,7 +153,7 @@ function ContactEdit() {
             navigate("..", { relative: "path" });
         } catch (err) {
             if (!err?.response) {
-                setErrMsg('Unable to connect to server.');
+                setErrMsg(err);
             }
             else if (err.response.status == 401) {
                 alert("Token expired, please login again.");
@@ -215,6 +194,7 @@ function ContactEdit() {
                     Edit Contact
                 </h2>
                 <button className='small-button'
+                    title="Delete Contact"
                     style={{ backgroundColor: "rgb(244, 191, 174)" }}
                     onClick={() => deleteContact()}>
                     <img src={trash}
@@ -292,16 +272,6 @@ function ContactEdit() {
                         onFocus={() => handleFocus()}
                     /></div>
 
-                {/* OLD Label
-                <div>
-                    <h3>Label</h3>
-                    <select
-                        value={labelId}
-                        onChange={e => setLabelId(e.target.value)}>
-                        <option value="0">None</option>
-                        {labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select></div> */}
-
                 {/* Custom Row */}
                 <ContactEditRows
                     focus={() => handleFocus()}
@@ -316,11 +286,14 @@ function ContactEdit() {
 
                 {/* Labels (MULTIPLE) */}
                 <ContactEditLabels
-                    labels={labels}
                     showLabelDropdown={showLabelDropdown}
                     setShowLabelDropdown={setShowLabelDropdown}
-                    selectedLabels={selectedLabels}
-                    setSelectedLabels={setSelectedLabels}
+                    selectedLabels={contactLabels}
+                    setSelectedLabels={setContactLabels}
+                    addedLabels={addedLabels}
+                    setAddedLabels={setAddedLabels}
+                    removedLabels={removedLabels}
+                    setRemovedLabels={setRemovedLabels}
                 />
 
                 {/* Comment */}

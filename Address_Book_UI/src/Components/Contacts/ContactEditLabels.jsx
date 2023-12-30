@@ -1,21 +1,35 @@
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import LabelContext from "../../Context/LabelProvider"
 
-const ContactEditLabels = ({ labels, showLabelDropdown, setShowLabelDropdown, selectedLabels, setSelectedLabels }) => {
-    const { labelsToString } = useContext(LabelContext);
+const ContactEditLabels = ({ showLabelDropdown, setShowLabelDropdown, selectedLabels, setSelectedLabels, addedLabels, setAddedLabels, removedLabels, setRemovedLabels }) => {
+    const { labels, labelsToString, fetchLabels } = useContext(LabelContext);
+
+    useEffect(() => {
+        fetchLabels();
+    }, [])
 
     const handleChange = (event, label) => {
         if (event.target.checked) {
+            //set display
             setSelectedLabels([...selectedLabels, label]);
+            //add to added
+            setAddedLabels([...addedLabels, label.id]);
+            //remove from removed
+            const rmData = removedLabels.filter((id) => id !== label.id)
+            setRemovedLabels(rmData);
         }
         else {
+            //remove from display
             const data = selectedLabels.filter((item) => item.id !== label.id)
             setSelectedLabels(data)
+            //add to removed
+            setRemovedLabels([...removedLabels, label.id]);
+            //remove from added
+            const addData = addedLabels.filter((id) => id !== label.id)
+            setAddedLabels(addData)
         }
-        console.log(selectedLabels)
     }
 
-    console.log(labelsToString(labels))
 
     return (
         <div className="one-line-field">
@@ -36,7 +50,7 @@ const ContactEditLabels = ({ labels, showLabelDropdown, setShowLabelDropdown, se
                                 type="checkbox"
                                 value={item.id}
                                 onChange={(e) => handleChange(e, item)}
-                            // checked={adminCheck} 
+                                checked={selectedLabels.filter(e => e.id == item.id).length > 0}
                             />
                             <label>{item.name}</label>
                         </div>

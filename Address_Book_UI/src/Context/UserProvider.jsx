@@ -16,6 +16,7 @@ export const UserProvider = ({ children }) => {
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("");
     const [adminCheck, setAdminCheck] = useState(false)
+    const [isLabelSorting, setIsLabelSorting] = useState(false);
 
     const [errMsg, setErrMsg] = useState('');
     const [success, setSuccess] = useState(false);
@@ -138,7 +139,7 @@ export const UserProvider = ({ children }) => {
     }
 
     return (
-        <UserContext.Provider value={{ adminCheck, setAdminCheck, firstName, lastName, email, role, fetchUser, changeUsernames, changePassword, changeEmail, deleteUser, setErrMsg, errMsg, setSuccess, success }}>
+        <UserContext.Provider value={{ adminCheck, setAdminCheck, firstName, lastName, email, role, fetchUser, changeUsernames, changePassword, changeEmail, deleteUser, setErrMsg, errMsg, setSuccess, success, isLabelSorting, setIsLabelSorting }}>
             {children}
         </UserContext.Provider>
     )

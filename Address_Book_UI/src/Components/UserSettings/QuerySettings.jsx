@@ -6,9 +6,11 @@ import axios from "../../API/axios";
 import LabelContext from "../../Context/LabelProvider";
 
 const SEARCH_CONTACTS_URL = '/contact/search-contact'
+const SEARCH_LABELS_URL = "/contact/get-contacts-with-label/"
 
 const FETCH_CONTACTS_ADMIN_URL = '/admin/get-all-contacts-as-admin'
 const SEARCH_CONTACTS_ADMIN_URL = '/admin/search-contact-as-admin'
+const SEARCH_LABELS_ADMIN_URL = "/admin/get-contacts-with-label-as-admin/"
 
 function QuerySettings() {
     const [showTable, setShowTable] = useState(false)
@@ -20,12 +22,34 @@ function QuerySettings() {
     const [tableData, setTableData] = useState([]);
 
     const { role, adminCheck, setAdminCheck } = useContext(UserContext);
-    const { labels, fetchLabels } = useContext(LabelContext)
+    const { labels, fetchLabels, adminLabels, fetchAdminLabels } = useContext(LabelContext)
     const { auth } = useContext(AuthContext);
 
     useEffect(() => {
-        fetchLabels();
-    }, [])
+        adminCheck ? fetchAdminLabels() : fetchLabels();
+    }, [adminCheck])
+
+    const searchLabels = async () => {
+        try {
+            const response = await axios.get(
+                (adminCheck ? SEARCH_LABELS_ADMIN_URL : SEARCH_LABELS_URL) + labelId, {
+                headers: { "Authorization": `Bearer ${auth}` }
+            });
+            setTableData(response.data)
+        } catch (err) {
+            if (!err?.response) {
+                setErrMsg('Unable to connect to server.');
+                console.log(err)
+            }
+            else if (err.response.status == 401) {
+                alert("Token expired, please login again.");
+                location.reload();
+            }
+            else {
+                setErrMsg(err.response.data.message);
+            }
+        }
+    }
 
     const getAllRecords = async () => {
         try {
@@ -34,7 +58,6 @@ function QuerySettings() {
                 headers: { "Authorization": `Bearer ${auth}` }
             });
             setTableData(response.data)
-            console.log(tableData)
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('Unable to connect to server.');
@@ -81,7 +104,7 @@ function QuerySettings() {
         setShowTable(true)
         switch (option) {
             case "0":
-                // IMPLEMENT
+                searchLabels()
                 break;
             case "4":
                 getAllRecords();
@@ -142,7 +165,8 @@ function QuerySettings() {
                     value={labelId}
                     onChange={e => setLabelId(e.target.value)}
                 >
-                    {(labels.length) ? labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>) : <option>No labels available</option>}
+                    {adminCheck ? ((adminLabels.length) ? adminLabels.map((item) => <option key={item.id} value={item.id}>{item.id}: {item.name}</option>) : <option>No labels available</option>)
+                        : ((labels.length) ? labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>) : <option>No labels available</option>)}
                 </select></div>}
                 {option == "1" && <div>
                     <SearchBar
@@ -187,22 +211,27 @@ function QuerySettings() {
                         </tr>
                     </thead>
                     <tbody>
-                        {tableData.map((row) => (
-                            <tr key={row.id} style={{ backgroundColor: `rgb(${row?.label?.colorRGB})` }}>
-                                <td>{row?.id}</td>
-                                <td>{row?.name}</td>
-                                <td>{row?.lastName}</td>
-                                <td>{row?.phoneNumber}</td>
-                                <td>{row?.nameOfCompany}</td>
-                                <td>{row?.address}</td>
-                                <td>{row?.email}</td>
-                                <td>{row?.fax}</td>
-                                <td>{row?.mobileNumber}</td>
-                                <td>{(row?.label) ? row.label.name : "None"}</td>
-                                <td>{row?.comment}</td>
-                                <td style={{ whiteSpace: "pre" }}>{row?.customRows?.map((obj) => `${obj.customName}: ${obj.customField}\n`)}</td>
-                            </tr>
-                        ))}
+                        {
+                            tableData.map((row) => {
+                                const rowLabels = row?.labels.sort((aL, bL) => aL.name.localeCompare(bL.name))
+                                return (
+                                    <tr key={row.id} style={(rowLabels.length > 0) ?
+                                        { backgroundColor: `rgb(${rowLabels[0].colorRGB})` } : {}}>
+                                        <td>{row?.id}</td>
+                                        <td>{row?.name}</td>
+                                        <td>{row?.lastName}</td>
+                                        <td>{row?.phoneNumber}</td>
+                                        <td>{row?.nameOfCompany}</td>
+                                        <td>{row?.address}</td>
+                                        <td>{row?.email}</td>
+                                        <td>{row?.fax}</td>
+                                        <td>{row?.mobileNumber}</td>
+                                        <td style={{ whiteSpace: "pre" }}>{(rowLabels.length > 0) ? rowLabels.map((obj) => `${obj.name}\n`) : "None"}</td>
+                                        <td>{row?.comment}</td>
+                                        <td style={{ whiteSpace: "pre" }}>{row?.customRows?.map((obj) => `${obj.customName}: ${obj.customField}\n`)}</td>
+                                    </tr>
+                                )
+                            })}
                     </tbody>
                 </table>}
             </div>
