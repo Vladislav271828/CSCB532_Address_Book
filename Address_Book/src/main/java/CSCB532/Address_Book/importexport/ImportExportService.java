@@ -80,15 +80,15 @@ public class ImportExportService {
             List<DtoContact> contactsToImport = csvRecords.stream()
                     .map(record -> {
                         DtoContact contact = new DtoContact();
-                        contact.setName(record[0]);
-                        contact.setLastName(record[1]);
-                        contact.setPhoneNumber(record[2]);
-                        contact.setNameOfCompany(record[3]);
-                        contact.setAddress(record[4]);
-                        contact.setEmail(record[5]);
-                        contact.setFax(record[6]);
-                        contact.setMobileNumber(record[7]);
-                        contact.setComment(record[8]);
+                        contact.setName(record[0].equals("null") ? null : record[0]);
+                        contact.setLastName(record[1].equals("null") ? null : record[1]);
+                        contact.setPhoneNumber(record[2].equals("null") ? null : record[2]);
+                        contact.setNameOfCompany(record[3].equals("null") ? null : record[3]);
+                        contact.setAddress(record[4].equals("null") ? null : record[4]);
+                        contact.setEmail(record[5].equals("null") ? null : record[5]);
+                        contact.setFax(record[6].equals("null") ? null : record[6]);
+                        contact.setMobileNumber(record[7].equals("null") ? null : record[7]);
+                        contact.setComment(record[8].equals("null") ? null : record[8]);
 
                         String labelsAsString = record[9];
                         List<DtoLabel> labels = parseLabels(labelsAsString);
