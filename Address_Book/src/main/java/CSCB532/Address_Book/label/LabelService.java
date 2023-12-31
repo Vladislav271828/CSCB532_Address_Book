@@ -183,7 +183,7 @@ public class LabelService {
 
         //remove the label from existing contacts
         List<Contact> contacts = contactRepository.findAllWithLabelId(labelId);
-        contacts.forEach(contact -> contactService.RemoveLabelFromContact(contact.getId(), labelId));
+        contacts.forEach(contact -> contactService.removeLabelFromContact(contact.getId(), labelId));
 
 
         Label label = labelRepository.findById(labelId)

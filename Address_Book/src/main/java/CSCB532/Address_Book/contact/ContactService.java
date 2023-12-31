@@ -153,6 +153,9 @@ public class ContactService {
         //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
 
+        contact.getLabels().forEach(label -> removeLabelFromContact(contactId, label.getId()));
+        contactRepository.save(contact);
+
         try {
             contactRepository.delete(contact);
         } catch (DataAccessException e) {
@@ -213,7 +216,7 @@ public class ContactService {
     }
 
     @Transactional
-    public void RemoveLabelFromContact(Integer contactId, Integer labelId) {
+    public void removeLabelFromContact(Integer contactId, Integer labelId) {
         //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
 

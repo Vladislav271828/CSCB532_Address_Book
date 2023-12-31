@@ -62,10 +62,10 @@ public class ContactController {
     }
 
     @PatchMapping("{contactId}/remove-label/{labelId}")
-    public ResponseEntity<DtoContact> RemoveLabelFromContact(
+    public ResponseEntity<DtoContact> removeLabelFromContact(
             @PathVariable Integer contactId,
             @PathVariable Integer labelId) {
-        contactService.RemoveLabelFromContact(contactId, labelId);
+        contactService.removeLabelFromContact(contactId, labelId);
         return ResponseEntity.noContent().build();
 
     }
