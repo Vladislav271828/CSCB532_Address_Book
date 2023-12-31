@@ -9,7 +9,7 @@ import ContactEdit from './Components/Contacts/ContactEdit.jsx'
 import Settings from './Components/UserSettings/Settings.jsx'
 import UserSettings from './Components/UserSettings/UserSettings.jsx'
 import LabelSettings from './Components/UserSettings/LabelSettings.jsx'
-import ExportSettings from './Components/UserSettings/ExportSettings.jsx'
+import ImportExportSettings from './Components/UserSettings/ImportExportSettings.jsx'
 import QuerySettings from './Components/UserSettings/QuerySettings.jsx'
 
 import { AppHeader, AppFooter } from './Components/HeaderFooter/HeaderFooter'
@@ -35,7 +35,7 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/settings/user" element={<UserSettings />} />
           <Route path="/settings/labels" element={<LabelSettings />} />
-          <Route path="/settings/export" element={<ExportSettings />} />
+          <Route path="/settings/import-export" element={<ImportExportSettings />} />
           <Route path="/settings/queries" element={<QuerySettings />} />
         </Route>
 

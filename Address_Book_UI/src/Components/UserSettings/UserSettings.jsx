@@ -125,7 +125,9 @@ function UserSettings() {
                 <h3>Delete User</h3>
                 {(!deletePrepState) ?
                     <button
-                        className="delete-user-button"
+                        className="wide-button"
+
+                        style={{ backgroundColor: "rgb(244, 191, 174)" }}
                         type="button"
                         onClick={() => setDeletePrepState(true)}>
                         Delete User
