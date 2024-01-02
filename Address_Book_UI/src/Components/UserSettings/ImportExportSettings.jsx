@@ -83,6 +83,7 @@ function ExportSettings() {
         let format = "";
         switch (files[0].type) {
             case "text/csv":
+            case "application/vnd.ms-excel":
                 format = "csv";
                 break;
             case "application/json":
