@@ -1,13 +1,13 @@
-import { useState, useContext, useEffect } from "react"
+import { useState, useContext } from "react"
 import { useParams, useNavigate } from "react-router-dom";
 
 import ContactsContext from "../../Context/ContactsProvider";
 import AuthContext from "../../Context/AuthProvider";
-import LabelContext from "../../Context/LabelProvider";
+import ContactEditRows from "./ContactEditRows";
+import ContactEditLabels from "./ContactEditLabels";
 
 import axios from '../../API/axios'
-import trash from "../../Icons/trash.png";
-import ContactEditRows from "./ContactEditRows";
+import trash from "../../Icons/trash.webp";
 
 const UPDATE_CONTACT_URL = "/contact/update-contact/"
 const DELETE_CONTACT_URL = "/contact/delete-contact/"
@@ -18,7 +18,6 @@ const UPDATE_CUSTOM_ROW_URL = "/custom-row/update-custom-row/"
 function ContactEdit() {
     const { auth } = useContext(AuthContext);
     const { contacts, setContacts } = useContext(ContactsContext);
-    const { labels, fetchLabels } = useContext(LabelContext);
 
     const { id } = useParams();
     const contact = contacts.find(contact => (contact.id).toString() === id);
@@ -32,7 +31,11 @@ function ContactEdit() {
     const [fax, setFax] = useState(contact.fax)
     const [mobileNumber, setMobileNumber] = useState(contact.mobileNumber)
     const [comment, setComment] = useState(contact.comment)
-    const [labelId, setLabelId] = useState((contact.label?.id) ? contact.label.id : "0")
+
+    const [contactLabels, setContactLabels] = useState((contact?.labels) ? contact.labels : [])
+    const [addedLabels, setAddedLabels] = useState([])
+    const [removedLabels, setRemovedLabels] = useState([])
+    const [showLabelDropdown, setShowLabelDropdown] = useState(false)
 
     const [customRows, setCustomRows] = useState((contact?.customRows) ? contact.customRows : [])
     const [newCustomRows, setNewCustomRows] = useState([])
@@ -45,9 +48,10 @@ function ContactEdit() {
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchLabels();
-    }, [])
+    const handleFocus = () => {
+        setErrMsg("")
+        setShowLabelDropdown(false)
+    }
 
     const changeLabelOfContact = async (url) => {
         // works only if body is null
@@ -56,12 +60,7 @@ function ContactEdit() {
                 headers: { "Authorization": `Bearer ${auth}` }
             });
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("changeLabelOfContact: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
@@ -77,12 +76,7 @@ function ContactEdit() {
             setCustomRowTemp([...customRowTemp, response])
 
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("createCustomRow: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
@@ -97,12 +91,7 @@ function ContactEdit() {
             const listCustomRow = customRowTemp.map((item) => item.id == id ? response.data : item);
             setCustomRowTemp(listCustomRow)
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("createCustomRow: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
@@ -117,25 +106,23 @@ function ContactEdit() {
             setCustomRowTemp(rows);
 
         } catch (err) {
-            if (!err?.response) {
-                console.log(err);
-            }
-            else {
-                console.log("deleteCustomRow: " + err.response.data.message);
-            }
+            throw (err);
         }
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const lastLabelId = (contact.label?.id) ? contact.label.id : "0";
-            if (lastLabelId != labelId) {
-                if (labelId == "0")
-                    await changeLabelOfContact("/contact/" + id + "/remove-label");
-                else
-                    await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
-            }
+            const removeLabelsPromise = contact?.labels.map(async (label) => {
+                if (removedLabels.includes(label.id))
+                    await changeLabelOfContact("/contact/" + id + "/remove-label/" + label.id);
+            });
+            await Promise.all(removeLabelsPromise);
+
+            const addLabelsPromise = addedLabels.map(async (labelId) => {
+                await changeLabelOfContact("/contact/" + id + "/add-label/" + labelId);
+            });
+            await Promise.all(addLabelsPromise);
 
             const updateRowsPromise = customRows.map(async (row, index) => {
                 if (row.customName != customRowTemp[index].customName || row.customField != customRowTemp[index].customField) {
@@ -149,8 +136,8 @@ function ContactEdit() {
             });
             await Promise.all(newRowsPromise);
 
-            const deleteRowsPromise = deletedCustomRows.map(async (id) => {
-                await deleteCustomRowFunc(id)
+            const deleteRowsPromise = deletedCustomRows.map(async (rowid) => {
+                await deleteCustomRowFunc(rowid)
             });
             await Promise.all(deleteRowsPromise);
 
@@ -166,7 +153,7 @@ function ContactEdit() {
             navigate("..", { relative: "path" });
         } catch (err) {
             if (!err?.response) {
-                setErrMsg('Unable to connect to server.');
+                setErrMsg(err);
             }
             else if (err.response.status == 401) {
                 alert("Token expired, please login again.");
@@ -207,6 +194,7 @@ function ContactEdit() {
                     Edit Contact
                 </h2>
                 <button className='small-button'
+                    title="Delete Contact"
                     style={{ backgroundColor: "rgb(244, 191, 174)" }}
                     onClick={() => deleteContact()}>
                     <img src={trash}
@@ -222,7 +210,7 @@ function ContactEdit() {
                         id="name"
                         defaultValue={name}
                         onChange={(e) => setName(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     />
                 </div>
                 <div>
@@ -231,7 +219,7 @@ function ContactEdit() {
                         id="lastName"
                         defaultValue={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     />
                 </div>
                 <div>
@@ -241,7 +229,7 @@ function ContactEdit() {
                         defaultValue={phoneNumber}
                         required
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Company</h3>
@@ -249,7 +237,7 @@ function ContactEdit() {
                         id="nameOfCompany"
                         defaultValue={nameOfCompany}
                         onChange={(e) => setCompany(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Address</h3>
@@ -257,7 +245,7 @@ function ContactEdit() {
                         id="address"
                         defaultValue={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Email</h3>
@@ -265,7 +253,7 @@ function ContactEdit() {
                         id="email"
                         defaultValue={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Fax</h3>
@@ -273,7 +261,7 @@ function ContactEdit() {
                         id="fax"
                         defaultValue={fax}
                         onChange={(e) => setFax(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
                 <div>
                     <h3>Mobile Number</h3>
@@ -281,21 +269,12 @@ function ContactEdit() {
                         id="mobileNumber"
                         defaultValue={mobileNumber}
                         onChange={(e) => setMobileNumber(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                     /></div>
-
-                {/* Label */}
-                <div>
-                    <h3>Label</h3>
-                    <select
-                        value={labelId}
-                        onChange={e => setLabelId(e.target.value)}>
-                        <option value="0">None</option>
-                        {labels.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select></div>
 
                 {/* Custom Row */}
                 <ContactEditRows
+                    focus={() => handleFocus()}
                     customRows={customRows}
                     setCustomRows={setCustomRows}
                     customRowTemp={customRowTemp}
@@ -305,14 +284,26 @@ function ContactEdit() {
                     deletedCustomRows={deletedCustomRows}
                     setDeletedCustomRows={setDeletedCustomRows} />
 
+                {/* Labels (MULTIPLE) */}
+                <ContactEditLabels
+                    showLabelDropdown={showLabelDropdown}
+                    setShowLabelDropdown={setShowLabelDropdown}
+                    selectedLabels={contactLabels}
+                    setSelectedLabels={setContactLabels}
+                    addedLabels={addedLabels}
+                    setAddedLabels={setAddedLabels}
+                    removedLabels={removedLabels}
+                    setRemovedLabels={setRemovedLabels}
+                />
+
                 {/* Comment */}
-                <div className="comment">
+                <div className="one-line-field">
                     <h3>Comment</h3>
                     <textarea
                         id="comment"
                         defaultValue={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        onFocus={() => setErrMsg('')}
+                        onFocus={() => handleFocus()}
                         rows={4} />
                 </div>
 

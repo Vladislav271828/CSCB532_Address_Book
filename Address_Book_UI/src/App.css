@@ -33,20 +33,21 @@
   min-height: 100vh;
 }
 
-span:hover,
+.spanlink:hover,
 .contact-info-field-container a:hover {
   color: #646464;
 }
 
-span,
+.spanlink,
 .contact-info-field-container a {
   text-decoration: underline;
   cursor: pointer;
-  color: #464646;
 }
 
 p,
-li {
+li,
+span,
+a {
   color: #464646;
 }
 
@@ -168,7 +169,7 @@ select {
 
 .checkbox {
   width: 1rem !important;
-  height: 1rem;
+  height: 1rem !important;
   margin: auto 5px auto 0 !important;
 
 }

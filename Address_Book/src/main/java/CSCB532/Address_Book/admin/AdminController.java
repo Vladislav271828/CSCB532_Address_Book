@@ -2,13 +2,13 @@ package CSCB532.Address_Book.admin;
 
 import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.label.DtoLabel;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.rmi.server.ExportException;
 import java.util.List;
 
@@ -33,14 +33,14 @@ public class AdminController {
 
     }
 
-    @GetMapping("/export-as-admin/csv")
-    public ResponseEntity<String> exportAllContactsToCSV() {
-        String csvContent = adminService.exportAllContactsToCSV();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, "text/csv");
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.csv");
-        return new ResponseEntity<>(csvContent, headers, HttpStatus.OK);
-    }
+//    @GetMapping("/export-as-admin/csv")
+//    public ResponseEntity<String> exportAllContactsToCSV() {
+//        String csvContent = adminService.exportAllContactsToCSV();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.add(HttpHeaders.CONTENT_TYPE, "text/csv");
+//        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.csv");
+//        return new ResponseEntity<>(csvContent, headers, HttpStatus.OK);
+//    }
 
     @GetMapping("/export-as-admin/json")
     public ResponseEntity<String> exportContactsToJSON() {
@@ -55,26 +55,31 @@ public class AdminController {
         }
     }
 
-    @CrossOrigin
-    @GetMapping("/export-as-admin/excel")
-    public ResponseEntity<byte[]> exportContactsToExcel() {
-        try {
-            byte[] excelContent = adminService.exportAllContactsToExcel();
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.xlsx");
-            return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
-        } catch (IOException e) {
-            // Handle exception appropriately, e.g., return an error response
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PostMapping("/import-as-admin/json")
+//    public ResponseEntity<String> importContacts(@RequestBody String json) throws JsonProcessingException {
+//        adminService.importContactsFromJSON(json);
+//        return ResponseEntity.ok("Contacts imported successfully.");
+//    }
 
-    @GetMapping("/get-contacts-with-most-common-label-as-admin")
-    public ResponseEntity<List<DtoContact>> getContactsWithMostCommonLabel() {
+//    @CrossOrigin
+//    @GetMapping("/export-as-admin/excel")
+//    public ResponseEntity<byte[]> exportContactsToExcel() {
+//        try {
+//            byte[] excelContent = adminService.exportAllContactsToExcel();
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+//            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.xlsx");
+//            return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+//        } catch (IOException e) {
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
-        return ResponseEntity.ok(adminService.getContactsWithMostCommonLabel());
-    }
+//    @GetMapping("/get-contacts-with-most-common-label-as-admin")
+//    public ResponseEntity<List<DtoContact>> getContactsWithMostCommonLabel() {
+//
+//        return ResponseEntity.ok(adminService.getContactsWithMostCommonLabel());
+//    }
 
     @GetMapping("/get-contacts-with-label-as-admin/{labelId}")
     public ResponseEntity<List<DtoContact>> getContactsWithLabel(

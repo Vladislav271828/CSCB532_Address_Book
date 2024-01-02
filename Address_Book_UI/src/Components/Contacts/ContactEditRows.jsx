@@ -1,7 +1,7 @@
 import ContactCustomRowField from "./ContactCustomRowField";
 
 
-const ContactEditRows = ({ customRows, setCustomRows, newCustomRows, setNewCustomRows, deletedCustomRows, setDeletedCustomRows, customRowTemp, setCustomRowTemp }) => {
+const ContactEditRows = ({ focus, customRows, setCustomRows, newCustomRows, setNewCustomRows, deletedCustomRows, setDeletedCustomRows, customRowTemp, setCustomRowTemp }) => {
 
     const addRow = () => {
         let object = {
@@ -14,6 +14,7 @@ const ContactEditRows = ({ customRows, setCustomRows, newCustomRows, setNewCusto
     return (
         <>
             <ContactCustomRowField
+                focus={focus}
                 setCustomRows={setCustomRows}
                 customRows={customRows}
                 setDeletedCustomRows={setDeletedCustomRows}
@@ -21,6 +22,7 @@ const ContactEditRows = ({ customRows, setCustomRows, newCustomRows, setNewCusto
                 customRowTemp={customRowTemp}
                 setCustomRowTemp={setCustomRowTemp} />
             <ContactCustomRowField
+                focus={focus}
                 setCustomRows={setNewCustomRows}
                 customRows={newCustomRows}
                 setDeletedCustomRows={setDeletedCustomRows}

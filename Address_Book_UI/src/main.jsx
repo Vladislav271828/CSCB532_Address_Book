@@ -8,13 +8,11 @@ import { UserProvider } from './Context/UserProvider.jsx';
 import { LabelProvider } from './Context/LabelProvider.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider><LabelProvider><ContactsProvider><UserProvider>
-        <Routes>
-          <Route path="*" element={<App />} />
-        </Routes>
-      </UserProvider></ContactsProvider></LabelProvider></AuthProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
+  <BrowserRouter>
+    <AuthProvider><LabelProvider><ContactsProvider><UserProvider>
+      <Routes>
+        <Route path="*" element={<App />} />
+      </Routes>
+    </UserProvider></ContactsProvider></LabelProvider></AuthProvider>
+  </BrowserRouter>
 )

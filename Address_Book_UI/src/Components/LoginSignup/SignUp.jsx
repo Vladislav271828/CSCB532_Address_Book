@@ -97,7 +97,7 @@ function SignUp() {
                     Don't have an account? <Link
                         to="/login"
                         tabIndex={0}>
-                        <span>Click here to log in.</span>
+                        <span className="spanlink">Click here to log in.</span>
                     </Link>
                 </p>
                 <button

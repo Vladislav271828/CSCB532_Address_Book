@@ -61,6 +61,7 @@ function UserSettings() {
                     />
                     {(firstName != firstNameTemp || lastName != lastNameTemp) &&
                         <button
+                            title="Submit Form"
                             className="small-button"
                             style={{ backgroundColor: "rgb(191, 244, 174)" }}
                             type="button"
@@ -81,7 +82,7 @@ function UserSettings() {
                         onFocus={() => setErrMsg('')}
                     />
                     {(email != emailTemp) &&
-                        <button
+                        <button title="Submit Form"
                             className="small-button"
                             style={{ backgroundColor: "rgb(191, 244, 174)" }}
                             type="button"
@@ -110,7 +111,7 @@ function UserSettings() {
                         onFocus={() => setErrMsg('')}
                     />
 
-                    <button
+                    <button title="Submit Form"
                         className="small-button"
                         style={{ backgroundColor: "rgb(191, 244, 174)" }}
                         type="button"
@@ -124,7 +125,9 @@ function UserSettings() {
                 <h3>Delete User</h3>
                 {(!deletePrepState) ?
                     <button
-                        className="delete-user-button"
+                        className="wide-button"
+
+                        style={{ backgroundColor: "rgb(244, 191, 174)" }}
                         type="button"
                         onClick={() => setDeletePrepState(true)}>
                         Delete User
@@ -140,7 +143,7 @@ function UserSettings() {
                                 onFocus={() => setErrMsg('')}
                             />
 
-                            <button
+                            <button title="Confirm Delete"
                                 className="small-button"
                                 style={{ backgroundColor: "rgb(244, 191, 174)" }}
                                 type="button"

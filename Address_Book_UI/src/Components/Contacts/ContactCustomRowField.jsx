@@ -1,6 +1,6 @@
-import trash from "../../Icons/trash.png";
+import trash from "../../Icons/trash.webp";
 
-const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows, deletedCustomRows, customRowTemp, setCustomRowTemp }) => {
+const ContactCustomRowField = ({ focus, setCustomRows, customRows, setDeletedCustomRows, deletedCustomRows, customRowTemp, setCustomRowTemp }) => {
     const handleFormChange = (event, index) => {
         let data = [...customRows];
         data[index][event.target.name] = event.target.value;
@@ -23,7 +23,8 @@ const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows
     return (
         <>{customRows.map((form, index) => {
             return (
-                <div key={index}>
+                <div key={index}
+                    onFocus={() => focus()}>
                     <div style={{ display: "flex" }}>
                         <input
                             className="custom-row-name"
@@ -34,6 +35,7 @@ const ContactCustomRowField = ({ setCustomRows, customRows, setDeletedCustomRows
                             required
                         />
                         <button
+                            title="Delete Custom Row"
                             className="small-button delete-row"
                             type="button"
                             onClick={() => handleDelete(index)}>

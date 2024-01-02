@@ -1,30 +1,17 @@
 package CSCB532.Address_Book.contact;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
-import CSCB532.Address_Book.customRow.DtoCustomRow;
-import CSCB532.Address_Book.exception.BadRequestException;
-import CSCB532.Address_Book.exception.ContactNotFoundException;
-import CSCB532.Address_Book.exception.DatabaseException;
-import CSCB532.Address_Book.exception.LabelNotFoundException;
+import CSCB532.Address_Book.exception.*;
 import CSCB532.Address_Book.label.Label;
 import CSCB532.Address_Book.label.LabelRepository;
 import CSCB532.Address_Book.user.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.rmi.server.ExportException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,19 +19,13 @@ import java.util.stream.Collectors;
 import static CSCB532.Address_Book.util.DtoValidationUtil.areAllContactDtoFieldsNull;
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class ContactService {
 
     private final ContactRepository contactRepository;
     private final AuthenticationService authenticationService;
     private final LabelRepository labelRepository;
 
-    @Autowired
-    public ContactService(ContactRepository contactRepository, AuthenticationService authenticationService, LabelRepository labelRepository) {
-        this.contactRepository = contactRepository;
-        this.authenticationService = authenticationService;
-        this.labelRepository = labelRepository;
-    }
 
     /**
      * Creates a new contact from the provided DTO.
@@ -54,6 +35,7 @@ public class ContactService {
      * @throws BadRequestException if the provided data is invalid
      * @throws DatabaseException   if there is an issue with saving the contact or mapping the result
      */
+    @Transactional
     public DtoContact createContact(DtoContact dtoContact) {
 
         // Retrieve currently logged user
@@ -63,7 +45,9 @@ public class ContactService {
         ModelMapper modelMapper = new ModelMapper();
         Contact contact = modelMapper.map(dtoContact, Contact.class);
         contact.setUser(user);
-
+        contact.setId(null);
+        contact.setLabels(new ArrayList<>());
+        contact.setCustomRows(new ArrayList<>());
         // Save the contact
         try {
             contact = contactRepository.save(contact);
@@ -134,6 +118,7 @@ public class ContactService {
      * @return A {@link List} of {@link DtoContact} objects representing the user's contacts.
      * If the user has no contacts, the list will be empty, never {@code null}.
      */
+    @Transactional
     public List<DtoContact> getAllContactsForLoggedInUser() {
         User user = authenticationService.getCurrentlyLoggedUser();
         List<Contact> userContacts = contactRepository.findAllByUserId(user.getId());
@@ -158,6 +143,7 @@ public class ContactService {
      * @throws ContactNotFoundException if no contact with the specified ID is found.
      * @throws DatabaseException       if there is an issue with the database operation.
      */
+    @Transactional
     public void deleteContactById(Integer contactId) {
         // Validate input
         if (contactId == null || contactId < 0) {
@@ -170,6 +156,14 @@ public class ContactService {
         //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
 
+        contact.getLabels().forEach(label -> {
+            //removeLabelFromContact(contactId, label.getId());
+            label.getContacts().remove(contact);
+            labelRepository.save(label);
+        });
+        //contact.getLabels().clear();
+        //contactRepository.save(contact);
+
         try {
             contactRepository.delete(contact);
         } catch (DataAccessException e) {
@@ -177,7 +171,8 @@ public class ContactService {
         }
     }
 
-    private void validateUserPermission(Integer contactId) {
+    @Transactional
+    public void validateUserPermission(Integer contactId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
         User currentUser = authenticationService.getCurrentlyLoggedUser();
@@ -186,6 +181,7 @@ public class ContactService {
         }
     }
 
+    @Transactional
     public List<DtoContact> searchContacts(DtoContact dtoContact) {
         User user = authenticationService.getCurrentlyLoggedUser();
 
@@ -201,7 +197,6 @@ public class ContactService {
 
     @Transactional
     public DtoContact addLabelToContact(Integer contactId, Integer labelId) {
-        //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
 
         // Find the existing contact
@@ -216,10 +211,10 @@ public class ContactService {
         }
 
         // Save the updated contact
-        contact.setLabel(label);
+        //contact.getLabels().add(label);
         label.getContacts().add(contact);
-        contactRepository.save(contact);
-        labelRepository.save(label);
+        //contactRepository.save(contact);
+        //labelRepository.save(label);
 
         // Map entity back to DTO and return
         try {
@@ -231,132 +226,30 @@ public class ContactService {
     }
 
     @Transactional
-    public void RemoveLabelFromContact(Integer contactId) {
+    public void removeLabelFromContact(Integer contactId, Integer labelId) {
         //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
 
         // Find the existing contact
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
-        if (contact.getLabel() == null) throw new LabelNotFoundException("Contact doesn't have a label to remove");
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new LabelNotFoundException("Label with ID " + labelId + " not found."));
+        if (contact.getLabels().isEmpty()) throw new LabelNotFoundException("Contact doesn't have a label to remove");
+        if (!contact.getLabels().contains(label)) throw new LabelNotFoundException("Contact doesn't have a label with id" +  labelId);
 
-        Label label = contact.getLabel();
-
+        List<Label> labels = contact.getLabels();
+        labels.remove(label);
         // Save the updated contact
-        contact.setLabel(null);
+        contact.setLabels(labels);
         label.getContacts().remove(contact);
         contactRepository.save(contact);
         labelRepository.save(label);
     }
 
-    public String exportAllContactsToCSV() {
-        List<DtoContact> allContacts = getAllContactsForLoggedInUser();
 
-        // Convert contacts to CSV format
-        StringBuilder csvContent = new StringBuilder();
-            // Write the header
-            csvContent.append("Name,Last Name,Phone Number,Name of Company,Address,Email,Fax,Mobile Number,Comment,Label,Custom Rows\n");
 
-            // Write each contact to the CSV file
-            for (DtoContact contact : allContacts) {
-                csvContent.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                        contact.getName(),
-                        contact.getLastName(),
-                        contact.getPhoneNumber(),
-                        contact.getNameOfCompany(),
-                        contact.getAddress(),
-                        contact.getEmail(),
-                        contact.getFax(),
-                        contact.getMobileNumber(),
-                        contact.getComment(),
-                        contact.getLabel() != null ? contact.getLabel().getName() : "null",
-                        getCustomRowsAsString(contact.getCustomRows())));
-            }
-
-            return csvContent.toString();
-
-    }
-
-    public String getCustomRowsAsString(List<DtoCustomRow> customRows) {
-        StringBuilder customRowsString = new StringBuilder();
-
-        if (customRows != null && !customRows.isEmpty()) {
-            for (DtoCustomRow customRow : customRows) {
-                customRowsString.append(customRow.getCustomName()).append(": ").append(customRow.getCustomField()).append(", ");
-            }
-            // Remove the trailing comma and space
-            customRowsString.setLength(customRowsString.length() - 2);
-        }
-
-        return customRowsString.toString();
-    }
-
-    public String exportAllContactsToJSON() throws ExportException {
-        List<DtoContact> allContacts = getAllContactsForLoggedInUser();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        try {
-            return objectMapper.writeValueAsString(allContacts);
-        } catch (JsonProcessingException e) {
-            throw new ExportException("Error exporting contacts to JSON: " + e.getMessage(), e);
-        }
-    }
-
-    public byte[] exportAllContactsToExcel() throws IOException {
-        List<DtoContact> allContacts = getAllContactsForLoggedInUser();
-
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Contacts");
-
-            // Write the header
-            Row headerRow = sheet.createRow(0);
-            String[] headerData = {"Name", "Last Name", "Phone Number", "Name of Company", "Address", "Email", "Fax",
-                    "Mobile Number", "Comment", "Label", "Custom Rows"};
-            for (int i = 0; i < headerData.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headerData[i]);
-            }
-
-            // Write each contact to the Excel file
-            int rowNum = 1;
-            for (DtoContact contact : allContacts) {
-                Row row = sheet.createRow(rowNum++);
-
-                row.createCell(0).setCellValue(contact.getName());
-                row.createCell(1).setCellValue(contact.getLastName());
-                row.createCell(2).setCellValue(contact.getPhoneNumber());
-                row.createCell(3).setCellValue(contact.getNameOfCompany());
-                row.createCell(4).setCellValue(contact.getAddress());
-                row.createCell(5).setCellValue(contact.getEmail());
-                row.createCell(6).setCellValue(contact.getFax());
-                row.createCell(7).setCellValue(contact.getMobileNumber());
-                row.createCell(8).setCellValue(contact.getComment());
-
-                Cell labelCell = row.createCell(9);
-                labelCell.setCellValue(contact.getLabel() != null ? contact.getLabel().getName() : "null");
-
-                Cell customRowsCell = row.createCell(10);
-                customRowsCell.setCellValue(getCustomRowsAsString(contact.getCustomRows()));
-            }
-
-            // Save the workbook content to a ByteArrayOutputStream
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
-        }
-    }
-
-    public List<DtoContact> getContactsWithMostCommonLabelByUserId(){
-        User user = authenticationService.getCurrentlyLoggedUser();
-        List<Contact> userContacts = contactRepository.findAllWithMostCommonLabelByUserId(user.getId());
-
-        ModelMapper modelMapper = new ModelMapper();
-
-        return userContacts.stream()
-                .map(contact -> modelMapper.map(contact, DtoContact.class))
-                .toList();
-    }
-
+    @Transactional
     public List<DtoContact> getContactsWithLabel(Integer labelId){
         List<Contact> userContacts = contactRepository.findAllWithLabelId(labelId);
 

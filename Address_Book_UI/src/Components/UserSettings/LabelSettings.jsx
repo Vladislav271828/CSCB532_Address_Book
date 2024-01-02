@@ -140,7 +140,7 @@ function LabelSettings() {
                 <h2 className='main-header-text'>
                     Labels
                 </h2>
-                <button className='small-button'
+                <button title="Add Label" className='small-button'
                     type="button"
                     onClick={() => addLabel()}>
                     +

@@ -20,6 +20,9 @@ import java.util.List;
     @GeneratedValue
     private Integer id;
 
+    @Column(name = "priority")
+    private Integer priority;
+
     @Column(name = "name")
     private String name;
 
@@ -32,7 +35,10 @@ import java.util.List;
     private User user;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "label", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @JoinTable(name = "label_contact",
+            joinColumns = @JoinColumn(name = "label_id"),
+            inverseJoinColumns = @JoinColumn(name = "contact_id"))
     private List<Contact> contacts;
 
 

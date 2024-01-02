@@ -1,7 +1,7 @@
 package CSCB532.Address_Book.contact;
 
 import CSCB532.Address_Book.customRow.DtoCustomRow;
-import CSCB532.Address_Book.label.Label;
+import CSCB532.Address_Book.label.DtoLabel;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -31,7 +31,7 @@ public class DtoContact {
     private String fax;
     private String mobileNumber;
     private String comment;
-    private Label label;
+    private List<DtoLabel> labels;
     private List<DtoCustomRow> customRows;
 
 

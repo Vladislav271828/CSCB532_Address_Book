@@ -1,4 +1,4 @@
-import gear from "../../Icons/gear.png";
+import gear from "../../Icons/gear.webp";
 import './Contacts.css'
 
 import { useState, useEffect, useContext } from "react";
@@ -14,12 +14,17 @@ import UserContext from "../../Context/UserProvider";
 function Contacts() {
     const [search, setSearch] = useState('');
     const { contacts, fetchError, isLoading, fetchContacts, createContact } = useContext(ContactsContext);
-    const { firstName, lastName, fetchUser } = useContext(UserContext);
+    const { firstName, lastName, fetchUser, isLabelSorting, setIsLabelSorting } = useContext(UserContext);
 
     useEffect(() => {
         fetchUser();
         fetchContacts();
     }, [])
+
+    const contactSearchQuery = contacts?.map(item => {
+        return (item.name + " " + item.lastName + " " +
+            item.labels.map((l) => { return l.name }).join(" ")).toLowerCase();
+    });
 
     return (
         <div className="main-container">
@@ -35,8 +40,15 @@ function Contacts() {
                     setSearch={setSearch}
                     placeholder="Search Contacts"
                 />
+                <button className='small-button'
+                    title={"Toggle Sort, Currently Sorting By: " + (isLabelSorting ? "Label" : "Name")}
+                    style={{ marginRight: "10px" }}
+                    onClick={() => setIsLabelSorting(!isLabelSorting)}>
+                    {isLabelSorting ? "L" : "N"}
+                </button>
                 <Link to="/settings">
-                    <button className='small-button'>
+                    <button className='small-button'
+                        title="Settings">
                         <img src={gear}
                             style={{ width: "1.2rem" }}
                             loading="eager"
@@ -51,9 +63,10 @@ function Contacts() {
                 {!fetchError && !isLoading &&
                     contacts.length ? (
                     <ContactsList
-                        contacts={contacts.filter(item => (
-                            (item.name + " " + item.lastName).toLowerCase()).includes(search.toLowerCase()
+                        contacts={contacts.filter((item, index) => (
+                            (contactSearchQuery[index]).toLowerCase()).includes(search.toLowerCase()
                             ))}
+                        isLabelSorting={isLabelSorting}
                     />
                 ) : (
                     <p>Your address book is empty.</p>

@@ -1,5 +1,5 @@
 import './HeaderFooter.css'
-import logo from "../../Icons/logo.png";
+import logo from "../../Icons/logo.webp";
 import { Link } from "react-router-dom"
 
 export function AppHeader() {

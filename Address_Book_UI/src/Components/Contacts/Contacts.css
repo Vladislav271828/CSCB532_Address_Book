@@ -68,12 +68,13 @@ h3 {
     flex: 0 1 50%;
 }
 
-.contact-info-field-container div.comment {
+.contact-info-field-container div.one-line-field {
     flex: 100%;
     height: auto;
+    position: relative;
 }
 
-.comment p {
+.one-line-field p {
     white-space: pre-line;
     word-wrap: break-word;
 }
@@ -113,7 +114,51 @@ h3 {
     background-color: rgb(244, 191, 174);
 }
 
+/* abomination */
+.labels-dropdown-container {
+    position: absolute;
+    display: none;
+    padding: 10px;
+    max-height: 100px;
+    overflow-y: scroll;
+    width: calc(100% - 30px - 3rem);
+    border: 2px solid #464646;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #FFF;
+    z-index: 1;
+    flex-wrap: wrap;
+}
+
+.input-style-box {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 5%;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #464646;
+    background-color: #eaeaea;
+}
+
+.one-line-field:hover .input-style-box {
+    outline: 2px solid #464646;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.one-line-field:hover .labels-dropdown-container {
+    display: flex;
+}
+
+.labels-dropdown-container div {
+    width: 100%;
+    flex: 50%;
+}
+
 @media (max-width: 500px) {
+
     .contact-info-field-container div {
         flex: 100%;
     }
@@ -132,5 +177,10 @@ h3 {
     .delete-row {
         min-width: 40px;
         height: 40px;
+    }
+
+    .labels-dropdown-container div {
+        flex: 100%;
+        margin-bottom: 5px;
     }
 }

@@ -56,10 +56,8 @@ public class Contact {
     private User user;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "label_id")
-    private Label label;
-
+    @ManyToMany(mappedBy = "contacts", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
+    private List<Label> labels;
     @JsonIgnore
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
     private List<CustomRow> customRows;

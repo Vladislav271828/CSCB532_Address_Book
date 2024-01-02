@@ -67,7 +67,7 @@ function Login() {
                         Already have an account? <Link
                             to="/signup"
                             tabIndex={0}>
-                            <span>Click here to sign up.</span>
+                            <span className="spanlink">Click here to sign up.</span>
                         </Link>
                     </p>
                     <button
