@@ -35,6 +35,7 @@ public class ContactService {
      * @throws BadRequestException if the provided data is invalid
      * @throws DatabaseException   if there is an issue with saving the contact or mapping the result
      */
+    @Transactional
     public DtoContact createContact(DtoContact dtoContact) {
 
         // Retrieve currently logged user
@@ -117,6 +118,7 @@ public class ContactService {
      * @return A {@link List} of {@link DtoContact} objects representing the user's contacts.
      * If the user has no contacts, the list will be empty, never {@code null}.
      */
+    @Transactional
     public List<DtoContact> getAllContactsForLoggedInUser() {
         User user = authenticationService.getCurrentlyLoggedUser();
         List<Contact> userContacts = contactRepository.findAllByUserId(user.getId());
@@ -141,6 +143,7 @@ public class ContactService {
      * @throws ContactNotFoundException if no contact with the specified ID is found.
      * @throws DatabaseException       if there is an issue with the database operation.
      */
+    @Transactional
     public void deleteContactById(Integer contactId) {
         // Validate input
         if (contactId == null || contactId < 0) {
@@ -153,8 +156,13 @@ public class ContactService {
         //checks if the currently logged user is attempting to update a contact that's not theirs
         validateUserPermission(contactId);
 
-        contact.getLabels().forEach(label -> removeLabelFromContact(contactId, label.getId()));
-        contactRepository.save(contact);
+        contact.getLabels().forEach(label -> {
+            //removeLabelFromContact(contactId, label.getId());
+            label.getContacts().remove(contact);
+            labelRepository.save(label);
+        });
+        //contact.getLabels().clear();
+        //contactRepository.save(contact);
 
         try {
             contactRepository.delete(contact);
@@ -163,7 +171,8 @@ public class ContactService {
         }
     }
 
-    private void validateUserPermission(Integer contactId) {
+    @Transactional
+    public void validateUserPermission(Integer contactId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact with ID " + contactId + " not found."));
         User currentUser = authenticationService.getCurrentlyLoggedUser();
@@ -172,6 +181,7 @@ public class ContactService {
         }
     }
 
+    @Transactional
     public List<DtoContact> searchContacts(DtoContact dtoContact) {
         User user = authenticationService.getCurrentlyLoggedUser();
 
@@ -231,10 +241,10 @@ public class ContactService {
         List<Label> labels = contact.getLabels();
         labels.remove(label);
         // Save the updated contact
-        //contact.setLabels(labels);
+        contact.setLabels(labels);
         label.getContacts().remove(contact);
         contactRepository.save(contact);
-        //labelRepository.save(label);
+        labelRepository.save(label);
     }
 
 
