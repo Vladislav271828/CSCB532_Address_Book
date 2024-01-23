@@ -1,13 +1,13 @@
 CSCB532_Traykov_Address_Book
 # MyYellowBook
 
-A single-page "address book" web app made with React and Spring allows users to store, organize, search, edit and delete their contacts with a simple and intuitive user interface.
+A single-page "address book" web app made with React and Spring, allowing users to store, organize, search, edit and delete their contacts with a simple and intuitive user interface.
 
 ![preview](preview.jpg)
 
 ## Developers
 
-- **Simeon** - Back-End Development (User Logic), Testing, Documentation
+- **Simeon** - Back-End Development (User Logic, Security Configuration), Testing, Documentation
 - **Vladislav** - Team Leader and Project Manager, Back-End Development (Contacts Logic)
 - **Ivaylo** - Front-End Development, UI Design and Branding
 
