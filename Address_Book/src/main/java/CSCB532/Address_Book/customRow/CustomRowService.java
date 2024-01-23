@@ -57,39 +57,39 @@ public class CustomRowService {
                 .orElseThrow(() -> new CustomRowNotFoundException("Custom row not found for ID: " + id));
 
         boolean isBlank = false;
-        if (dtoCustomRow.getCustomField() != null){
-            if (dtoCustomRow.getCustomField().isBlank()){
+        if (dtoCustomRow.getCustomField() != null) {
+            if (dtoCustomRow.getCustomField().isBlank()) {
                 isBlank = true;
 //                throw new BadRequestException("Field Name can't be blank.");
             }
-            if (existingCustomRow.getCustomField().equals(dtoCustomRow.getCustomField())){
+            if (existingCustomRow.getCustomField().equals(dtoCustomRow.getCustomField())) {
                 dtoCustomRow.setCustomField(null);
 //                throw new BadRequestException("Field Name can't be the same.");
-            }else if(isBlank){
+            } else if (isBlank) {
                 dtoCustomRow.setCustomField(null);
             }
         }
 
         boolean isNameBlank = false;
-        if ( dtoCustomRow.getCustomName() != null){
-            if (dtoCustomRow.getCustomName().isBlank()){
+        if (dtoCustomRow.getCustomName() != null) {
+            if (dtoCustomRow.getCustomName().isBlank()) {
                 isNameBlank = true;
 //                throw new BadRequestException("Custom Name can't be empty.");
             }
-            if (existingCustomRow.getCustomName().equals(dtoCustomRow.getCustomName())){
+            if (existingCustomRow.getCustomName().equals(dtoCustomRow.getCustomName())) {
                 dtoCustomRow.setCustomName(null);
 //                    throw new BadRequestException("Custom Name can't be the same.");
-            }else if(isNameBlank){
+            } else if (isNameBlank) {
                 dtoCustomRow.setCustomName(null);
             }
         }
 
-        if (dtoCustomRow.getCustomName() == null && dtoCustomRow.getCustomField() == null){
+        if (dtoCustomRow.getCustomName() == null && dtoCustomRow.getCustomField() == null) {
             throw new BadRequestException("Incorrect request body");
         }
 
 
-            validateUserPermission(existingCustomRow.getContact().getId());
+        validateUserPermission(existingCustomRow.getContact().getId());
 
         ModelMapper modelMapper = configureModelMapperForUpdate();
         modelMapper.map(dtoCustomRow, existingCustomRow);
@@ -144,7 +144,7 @@ public class CustomRowService {
         validateUserPermission(contactId);
 
         List<CustomRow> customRows = customRowRepository.findByContactId(contactId);
-        if (customRows.isEmpty()){
+        if (customRows.isEmpty()) {
             throw new CustomRowNotFoundException("No Custom Rows found for contact with id " + contactId);
         }
         try {
@@ -163,7 +163,6 @@ public class CustomRowService {
             throw new BadRequestException("User doesn't have permissions to perform this action.");
         }
     }
-
 
 
     private void validateContactExists(Integer contactId) {

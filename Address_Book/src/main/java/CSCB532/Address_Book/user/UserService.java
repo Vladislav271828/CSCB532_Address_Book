@@ -60,7 +60,7 @@ public class UserService {
             isChanged = true;
         }
 
-        if (!isChanged){
+        if (!isChanged) {
             throw new BadRequestException("Invalid Data provided.");
         }
 
@@ -76,7 +76,7 @@ public class UserService {
     public void deleteUserProfile() {
         User currentUser = authenticationService.getCurrentlyLoggedUser();
 
-        if (userRepository.existsByEmail(currentUser.getEmail())){
+        if (userRepository.existsByEmail(currentUser.getEmail())) {
             userRepository.delete(userRepository.findByEmail(currentUser.getEmail()).orElseThrow(
                     () -> new DatabaseException("Problem finding user")
             ));
@@ -89,11 +89,11 @@ public class UserService {
         //check if the email the user is trying to update with is already in db
         boolean isEmailTaken = isEmailTaken(dtoEmailRequest.getEmail());
 
-        if (isEmailTaken){
+        if (isEmailTaken) {
             throw new BadRequestException("Email already in use.");
         }
 
-        if (currentUser.getEmail().equals(dtoEmailRequest.getEmail())){
+        if (currentUser.getEmail().equals(dtoEmailRequest.getEmail())) {
             throw new BadRequestException("Invalid input.");
         }
 
@@ -107,7 +107,7 @@ public class UserService {
     }
 
 
-    public boolean isEmailTaken(String email){
+    public boolean isEmailTaken(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         return user.isPresent();
     }

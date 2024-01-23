@@ -67,7 +67,7 @@ public class LabelService {
 
         boolean isNameAlreadyInUseByLoggedUser = labelRepository.existsByNameAndUserId(dtoLabel.getName(), user.getId());
 
-        if (isNameAlreadyInUseByLoggedUser){
+        if (isNameAlreadyInUseByLoggedUser) {
             throw new BadRequestException("The label name " + dtoLabel.getName() + " is already in use.");
         }
 
@@ -93,11 +93,11 @@ public class LabelService {
     }
 
     public DtoLabel updateLabel(Integer labelId, DtoLabel dtoLabel) {
-        if (dtoLabel.getId()!=null){
+        if (dtoLabel.getId() != null) {
             dtoLabel.setId(null);
         }
 
-        if (dtoLabel.getName() == null && dtoLabel.getColorRGB() == null){
+        if (dtoLabel.getName() == null && dtoLabel.getColorRGB() == null) {
             throw new BadRequestException("Incorrect request body");
         }
 
@@ -106,29 +106,29 @@ public class LabelService {
                 .orElseThrow(() -> new CustomRowNotFoundException("Label not found for ID: " + labelId));
 
         boolean isNameBlank = false;
-        if (dtoLabel.getName() != null){
-            if (dtoLabel.getName().isBlank()){
+        if (dtoLabel.getName() != null) {
+            if (dtoLabel.getName().isBlank()) {
                 isNameBlank = true;
 //                throw new BadRequestException("Field Name can't be blank.");
             }
-            if (existingLabel.getName().equals(dtoLabel.getName())){
+            if (existingLabel.getName().equals(dtoLabel.getName())) {
                 dtoLabel.setName(null);
 //                throw new BadRequestException("Field Name can't be the same.");
-            }else if(isNameBlank){
+            } else if (isNameBlank) {
                 dtoLabel.setName(null);
             }
         }
 
         boolean isColorRgbBlank = false;
-        if ( dtoLabel.getColorRGB() != null){
-            if (dtoLabel.getColorRGB().isBlank()){
+        if (dtoLabel.getColorRGB() != null) {
+            if (dtoLabel.getColorRGB().isBlank()) {
                 isColorRgbBlank = true;
 //                throw new BadRequestException("Custom Name can't be empty.");
             }
-            if (existingLabel.getColorRGB().equals(dtoLabel.getColorRGB())){
+            if (existingLabel.getColorRGB().equals(dtoLabel.getColorRGB())) {
                 dtoLabel.setColorRGB(null);
 //                    throw new BadRequestException("Custom Name can't be the same.");
-            }else if(isColorRgbBlank){
+            } else if (isColorRgbBlank) {
                 dtoLabel.setColorRGB(null);
             }
         }
@@ -139,7 +139,7 @@ public class LabelService {
         User user = authenticationService.getCurrentlyLoggedUser();
         boolean isNameAlreadyInUseByLoggedUser = labelRepository.existsByNameAndUserId(dtoLabel.getName(), user.getId());
 
-        if (isNameAlreadyInUseByLoggedUser){
+        if (isNameAlreadyInUseByLoggedUser) {
             throw new BadRequestException("The label name " + dtoLabel.getName() + " is already in use.");
         }
 

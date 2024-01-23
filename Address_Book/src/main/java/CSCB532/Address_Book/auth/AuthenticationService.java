@@ -38,10 +38,10 @@ public class AuthenticationService {
     private final VerificationRepository verificationRepository;
 
 
-    public AuthenticationResponse register(RegisterRequest request) {//TODO switch back to return AuthenticationResponse instead of void
+    public AuthenticationResponse register(RegisterRequest request) {
 
         //Check if incoming data is valid
-        if (checkUserDto(request)){//checks if fields are invalid
+        if (checkUserDto(request)) {//checks if fields are invalid
             throw new BadRequestException("Invalid Request: ".concat(errorMessage(request)));//the errorMessage method will get the names of the invalid fields. I.e. email, password. And their values - though for the moment the values are going to be empty strings
         }
 
@@ -65,7 +65,7 @@ public class AuthenticationService {
                 .build();
 
         var savedUser = repository.save(user); //save user in the db
-        //TODO uncomment this after merge
+
         var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
 
         saveUserToken(savedUser, jwtToken);//save the token
@@ -79,7 +79,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
-        if (checkUserDto(request)){//checks if fields are invalid
+        if (checkUserDto(request)) {//checks if fields are invalid
             throw new BadRequestException("Invalid Request: ".concat(errorMessage(request)));//the errorMessage method will get the names of the invalid fields. I.e. email, password. And their values - though for the moment the values are going to be empty strings
         }
 
@@ -87,18 +87,17 @@ public class AuthenticationService {
                 .orElseThrow();//we do this and need it to there after revoke all previous jwt tokens
 
 
-//        boolean verified = userRepository.isUserVerified(user.getId());//TODO comment this out after merge
+        boolean verified = userRepository.isUserVerified(user.getId());
 
-//        if (!verified){
-//            throw new BadRequestException("User is not verified. A verification email has been sent to " + user.getEmail() + ".");//TODO comment this out after merge
-//        }
+        if (!verified) {
+            throw new BadRequestException("User is not verified. A verification email has been sent to " + user.getEmail() + ".");//TODO comment this out after merge
+        }
         authenticationManager.authenticate(//authenticates the user
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
-
 
 
         revokeAllUserTokens(user);//ensures jwt tokens are set to false before creating a new one to avoid addition of more than one valid jwt tokens
@@ -116,7 +115,7 @@ public class AuthenticationService {
     public String createAdmin(RegisterRequest request) {//TODO strictly for test
 
         //Check if incoming data is valid
-        if (checkUserDto(request)){//checks if fields are invalid
+        if (checkUserDto(request)) {//checks if fields are invalid
             throw new BadRequestException("Invalid Request: ".concat(errorMessage(request)));//the errorMessage method will get the names of the invalid fields. I.e. email, password. And their values - though for the moment the values are going to be empty strings
         }
 
@@ -140,7 +139,7 @@ public class AuthenticationService {
                 .build();
 
         var savedUser = repository.save(user); //save user in the db
-        //TODO uncomment this after merge
+
         var jwtToken = jwtService.generateToken(user); //generate a JWT Token for the user's session (If the user logs out the token will be marked as invalid, if the user authenticates again a new token will be created and the old one will be updated to be invalid)
 
         saveUserToken(savedUser, jwtToken);
@@ -173,7 +172,7 @@ public class AuthenticationService {
     }
 
 
-    //ultra cool method, I use it every time (Not sure if this is good practice LOL)
+    //ultra cool method, I use it every time (Not sure if this is good practice ¯\_( ͡° ͜ʖ ͡°)_/¯)
     public User getCurrentlyLoggedUser() { //throws the cringe
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName(); // This returns the username/email of the authenticated user

@@ -1,7 +1,10 @@
 package CSCB532.Address_Book.contact;
 
 import CSCB532.Address_Book.auth.AuthenticationService;
-import CSCB532.Address_Book.exception.*;
+import CSCB532.Address_Book.exception.BadRequestException;
+import CSCB532.Address_Book.exception.ContactNotFoundException;
+import CSCB532.Address_Book.exception.DatabaseException;
+import CSCB532.Address_Book.exception.LabelNotFoundException;
 import CSCB532.Address_Book.label.Label;
 import CSCB532.Address_Book.label.LabelRepository;
 import CSCB532.Address_Book.user.User;
@@ -69,7 +72,7 @@ public class ContactService {
      * @param contactId  the ID of the contact to update
      * @param dtoContact the DTO containing updated contact information
      * @return the updated contact as a DTO
-     * @throws BadRequestException     if the provided data is invalid
+     * @throws BadRequestException      if the provided data is invalid
      * @throws ContactNotFoundException if no contact is found with the given ID
      */
     @Transactional
@@ -139,9 +142,9 @@ public class ContactService {
      * If the contact is found and successfully deleted, a success message is returned.
      *
      * @param contactId The ID of the contact to be deleted.
-     * @throws BadRequestException     if the {@code contactId} is {@code null} or negative.
+     * @throws BadRequestException      if the {@code contactId} is {@code null} or negative.
      * @throws ContactNotFoundException if no contact with the specified ID is found.
-     * @throws DatabaseException       if there is an issue with the database operation.
+     * @throws DatabaseException        if there is an issue with the database operation.
      */
     @Transactional
     public void deleteContactById(Integer contactId) {
@@ -236,7 +239,8 @@ public class ContactService {
         Label label = labelRepository.findById(labelId)
                 .orElseThrow(() -> new LabelNotFoundException("Label with ID " + labelId + " not found."));
         if (contact.getLabels().isEmpty()) throw new LabelNotFoundException("Contact doesn't have a label to remove");
-        if (!contact.getLabels().contains(label)) throw new LabelNotFoundException("Contact doesn't have a label with id" +  labelId);
+        if (!contact.getLabels().contains(label))
+            throw new LabelNotFoundException("Contact doesn't have a label with id" + labelId);
 
         List<Label> labels = contact.getLabels();
         labels.remove(label);
@@ -248,9 +252,8 @@ public class ContactService {
     }
 
 
-
     @Transactional
-    public List<DtoContact> getContactsWithLabel(Integer labelId){
+    public List<DtoContact> getContactsWithLabel(Integer labelId) {
         List<Contact> userContacts = contactRepository.findAllWithLabelId(labelId);
 
         ModelMapper modelMapper = new ModelMapper();

@@ -118,7 +118,8 @@ public class AdminService {
         ObjectMapper objectMapper = new ObjectMapper();
         List<DtoContact> importedContacts;
 
-        importedContacts = objectMapper.readValue(json, new TypeReference<>() {});
+        importedContacts = objectMapper.readValue(json, new TypeReference<>() {
+        });
         ModelMapper modelMapper = new ModelMapper();
 
         List<Contact> contactsToImport = importedContacts.stream()
@@ -190,7 +191,7 @@ public class AdminService {
 //                .collect(Collectors.toList());
 //    }
 
-    public List<DtoContact> getContactsWithLabel(Integer labelId){
+    public List<DtoContact> getContactsWithLabel(Integer labelId) {
 
         List<Contact> userContacts = contactRepository.findAllWithLabelId(labelId);
 

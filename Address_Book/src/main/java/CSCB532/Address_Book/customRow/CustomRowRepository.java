@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface CustomRowRepository extends JpaRepository<CustomRow, Integer> {
     @Transactional
     Optional<CustomRow> findById(Integer userId);
+
     List<CustomRow> findByContactId(Integer contactId);
 
 }

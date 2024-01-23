@@ -1,6 +1,6 @@
 package CSCB532.Address_Book.exception;
 
-public class ContactNotFoundException extends RuntimeException{
+public class ContactNotFoundException extends RuntimeException {
     public ContactNotFoundException(String message) {
         super(message);
     }

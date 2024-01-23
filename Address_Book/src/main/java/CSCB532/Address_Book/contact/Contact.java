@@ -56,7 +56,7 @@ public class Contact {
     private User user;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "contacts", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "contacts", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private List<Label> labels;
     @JsonIgnore
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
@@ -75,8 +75,6 @@ public class Contact {
                 ", fax='" + fax + '\'' +
                 ", mobileNumber='" + mobileNumber + '\'' +
                 ", comment='" + comment + '\'' +
-                //", user=" + user +
-//                ", customRows=" + customRows +
                 '}';
     }
 }

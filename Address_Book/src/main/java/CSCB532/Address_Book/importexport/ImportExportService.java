@@ -68,6 +68,7 @@ public class ImportExportService {
         return csvContent.toString();
 
     }
+
     @Transactional
     public void importContactsFromCSV(String csvData) {
 
@@ -200,6 +201,7 @@ public class ImportExportService {
             throw new ExportException("Error exporting contacts to JSON: " + e.getMessage(), e);
         }
     }
+
     @Transactional
     public void importContactsFromJSON(String json) {
 
@@ -207,14 +209,15 @@ public class ImportExportService {
         List<DtoContact> importedContacts;
 
         try {
-            importedContacts = objectMapper.readValue(json, new TypeReference<>() {});
+            importedContacts = objectMapper.readValue(json, new TypeReference<>() {
+            });
         } catch (JsonProcessingException e) {
             throw new ImportException("Error importing contacts from JSON: " + e.getMessage(), e);
         }
         importContactList(importedContacts);
     }
 
-    private void importContactList(List<DtoContact> importedContacts){
+    private void importContactList(List<DtoContact> importedContacts) {
         importedContacts.forEach(dtoContact -> {
             DtoContact contact = contactService.createContact(dtoContact);
             dtoContact.getCustomRows().forEach(dtoCustomRow -> {
@@ -222,14 +225,13 @@ public class ImportExportService {
                 customRowService.createCustomRow(dtoCustomRow);
             });
             dtoContact.getLabels().forEach(dtoLabel -> {
-                if (labelService.getAllLabelsForLoggedInUser().contains(dtoLabel)){
+                if (labelService.getAllLabelsForLoggedInUser().contains(dtoLabel)) {
                     //dtoLabel.setName(dtoLabel.getName() + "-2");
                     Integer labelId = labelService.getAllLabelsForLoggedInUser().stream()
                             .filter(label -> dtoLabel.getName().equals(label.getName()))
                             .toList().get(0).getId();
                     contactService.addLabelToContact(contact.getId(), labelId);
-                }
-                else {
+                } else {
                     DtoLabel label = labelService.createLabel(dtoLabel);
                     contactService.addLabelToContact(contact.getId(), label.getId());
                 }
@@ -310,8 +312,8 @@ public class ImportExportService {
                 dtoContact.setComment(getStringCellValue(row.getCell(8)));
 
                 // Process labels and custom rows accordingly
-                 dtoContact.setLabels(parseLabels(getStringCellValue(row.getCell(9))));
-                 dtoContact.setCustomRows(parseCustomRows(getStringCellValue(row.getCell(10))));
+                dtoContact.setLabels(parseLabels(getStringCellValue(row.getCell(9))));
+                dtoContact.setCustomRows(parseCustomRows(getStringCellValue(row.getCell(10))));
 
                 importedContacts.add(dtoContact);
             }

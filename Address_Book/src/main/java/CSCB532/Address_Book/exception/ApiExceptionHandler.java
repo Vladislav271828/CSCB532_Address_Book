@@ -30,19 +30,19 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException exc){
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException exc) {
         logger.error("BadRequestException occurred: {}", exc.getMessage());
         return buildErrorResponse(exc, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ContactNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleContactNotFoundException(ContactNotFoundException exc){
+    public ResponseEntity<ErrorResponse> handleContactNotFoundException(ContactNotFoundException exc) {
         logger.error("ContactNotFoundException occurred: {}", exc.getMessage());
         return buildErrorResponse(exc, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(CustomRowNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCustomRowNotFoundException(CustomRowNotFoundException exc){
+    public ResponseEntity<ErrorResponse> handleCustomRowNotFoundException(CustomRowNotFoundException exc) {
         logger.error("CustomRowNotFoundException occurred: {}", exc.getMessage());
         return buildErrorResponse(exc, HttpStatus.NOT_FOUND);
     }
@@ -81,7 +81,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception exc){
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception exc) {
         logger.error("General Exception occurred: {}", exc.getMessage());
         String targetSubstring = "Required request body is missing";
 

@@ -21,7 +21,7 @@ public class DtoContact {
     private Integer id;
     private String name;
     private String lastName;
-    @NotEmpty (message = "Phone Number can't be an empty string.")
+    @NotEmpty(message = "Phone Number can't be an empty string.")
     @NotNull(message = "Phone Number can't be null.")
     @Pattern(regexp = "[0-9]+", message = "Invalid phone number format")
     private String phoneNumber;

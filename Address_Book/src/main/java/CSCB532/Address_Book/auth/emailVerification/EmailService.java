@@ -27,6 +27,7 @@ public class EmailService {
     private final UserRepository userRepository;
     private final String sendGridApiKey;
     private final AuthenticationService authenticationService;
+
     @Autowired
     public EmailService(VerificationRepository verificationRepository, UserRepository userRepository, @Value("${spring.mail.sendgrid.api-key}") String sendGridApiKey, AuthenticationService authenticationService) {
         this.verificationRepository = verificationRepository;
@@ -74,7 +75,7 @@ public class EmailService {
     public void sendVerificationEmailChange(String to) throws IOException {
         User currentUser = authenticationService.getCurrentlyLoggedUser();
 
-        if (currentUser.getEmail().equals(to)){
+        if (currentUser.getEmail().equals(to)) {
             throw new BadRequestException("Email already in use.");
         }
         Optional<User> user = userRepository.findByEmail(currentUser.getEmail());

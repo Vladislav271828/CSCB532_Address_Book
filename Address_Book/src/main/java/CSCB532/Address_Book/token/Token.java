@@ -28,7 +28,7 @@ public class Token {
     private boolean expired;
     private boolean revoked;
 
-    @JsonIgnore//Here if I remove the json-ignore i get an infinite loop
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -42,7 +42,6 @@ public class Token {
                 ", tokenType=" + tokenType +
                 ", expired=" + expired +
                 ", revoked=" + revoked +
-//                ", user=" + user +
                 '}';
     }
 }

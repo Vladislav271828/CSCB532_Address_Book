@@ -2,7 +2,6 @@ package CSCB532.Address_Book.admin;
 
 import CSCB532.Address_Book.contact.DtoContact;
 import CSCB532.Address_Book.label.DtoLabel;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

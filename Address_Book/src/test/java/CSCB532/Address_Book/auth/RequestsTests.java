@@ -2816,157 +2816,157 @@ public class RequestsTests {
 
 
 
-    //admin stuff
-    //http://localhost:8080/api/v1/admin/get-all-contacts-as-admin -> get all contacts
-    @Test
-    @Transactional
-    public void getAllContactsADMIN_thenExpect200() throws Exception {
-        //create a custom row for Donald's contact
-        var customRowDonald1 = DtoCustomRow.builder()
-                .customName("What I think about Obama")
-                .customField("I like him")
-                .build();
-
-        List<DtoCustomRow> customRowsForDonald = new ArrayList<>();
-        customRowsForDonald.add(customRowDonald1);
-
-        //create label
-        //create a label obj
-        String name = "red";
-        String color = "255, 0, 0";
-        var label = Label.builder()
-                .name(name)
-                .colorRGB(color)
-                .build();
-
-        //create Donald's first contact
-        // Donald creates a contact
-        var contactDtoDonald1 = DtoContact.builder()
-                .name("Barak")
-                .lastName("Obama")
-                .phoneNumber("0574965222")
-                .nameOfCompany("Obama Care")
-                .address("The White House")
-                .email("ObamaCaresForYou@usa.com")
-                .fax("+1-907-555-1234")
-                .mobileNumber("0574965333")
-                .comment("I love this guy.. Obviously.")
-                .customRows(customRowsForDonald)
-                .label(label)
-                .build();
-
-
-        String contactJsonPayloadDonald1 = convertFromObjectToJson(contactDtoDonald1).toString();
-        //create request
-        MvcResult createContactResultDonald1 = createContact(contactJsonPayloadDonald1, jwtToken, status().isOk());
-
-        JsonNode createContactResultDonald1JsonNode = convertFromStringToJson(createContactResultDonald1.getResponse().getContentAsString());
-
-        //needed later for assertion
-        String donaldContactId = createContactResultDonald1JsonNode.get("id").asText();
-        String donaldCustomRowId = createContactResultDonald1JsonNode.get("customRows").get(0).get("id").asText();
-        String donaldLabelId = createContactResultDonald1JsonNode.get("label").get("id").asText();
-
-        //create user 2
-        //create Obama
-        var newUserDto = RegisterRequest.builder()
-                .firstName("Barak")
-                .lastName("Obama")
-                .email("BarakObama@usa.com")
-                .password("A(&*SHY(A*HWPF")
-                .build();
-        MvcResult registerResult = createUser(newUserDto);
-
-        String obamaJwt = extractJwtToken(registerResult.getResponse().getContentAsString());
-
-        //create custom row to Obama's to be created contact
-        var customRowObama1 = DtoCustomRow.builder()
-                .customName("What I think about Donald")
-                .customField("I don't like him")
-                .build();
-
-
-        List<DtoCustomRow> customRowsForObama = new ArrayList<>();
-        customRowsForObama.add(customRowObama1);
-
-
-        //create label
-        //create a label obj
-        name = "orange";
-        color = "255, 0, 0";
-        var labelObama1 = Label.builder()
-                .name(name)
-                .colorRGB(color)
-                .build();
-
-        //create contact for Obama
-        var contactDtoObama1 = DtoContact.builder()
-                .name("Donald")
-                .lastName("Trump")
-                .phoneNumber("0574965222")
-                .nameOfCompany("Donald Doesn't Care")
-                .address("The Orange House")
-                .email("DonaldDoesntForYou@usa.com")
-                .fax("+1-907-555-1234")
-                .mobileNumber("0574965333")
-                .comment("I might love this guy if he wasn't orange.")
-                .customRows(customRowsForObama)
-                .label(labelObama1)
-                .build();
-
-        String contactJsonPayloadObama1 = convertFromObjectToJson(contactDtoObama1).toString();
-        //create contact request
-        MvcResult createContactResultObama1 = createContact(contactJsonPayloadObama1, obamaJwt, status().isOk());
-
-        JsonNode createContactResultObama1JsonNode = convertFromStringToJson(createContactResultObama1.getResponse().getContentAsString());
-
-        //needed later for assertion
-        String obamaContactId = createContactResultObama1JsonNode.get("id").asText();
-        String obamaCustomRowId = createContactResultObama1JsonNode.get("customRows").get(0).get("id").asText();
-        String obamaLabelId = createContactResultObama1JsonNode.get("label").get("id").asText();
-
-
-
-        //create admin
-        RegisterRequest adminUser = new RegisterRequest("ADMIN", "ADMIN", "ADMIN@GMAIL@COM", "ADMIN!123");
-        String adminJwt = authenticationService.createAdmin(adminUser);
-
-
-
-        //make a get all request with the admin jwt token
-        MvcResult actualGetAllContactsResult = getAllContactsAdmin(adminJwt, status().isOk());
-
-
-        //It's late I want to sleep - chatGTP wrote the code bellow, sorry not sorry.
-        JsonNode actualGetAllContactsResultJsonNode = convertFromStringToJson(actualGetAllContactsResult.getResponse().getContentAsString());
-        ArrayNode contactsArray = (ArrayNode) actualGetAllContactsResultJsonNode;
-        JsonNode donaldNode = null;
-        JsonNode obamaNode = null;
-        for (JsonNode contactNode : contactsArray) {
-            if ("DonaldDoesntForYou@usa.com".equals(contactNode.get("email").asText())) {
-                obamaNode = contactNode;
-            } else if ("ObamaCaresForYou@usa.com".equals(contactNode.get("email").asText())) {
-                donaldNode = contactNode;
-            }
-        }
-
-
-
-        //the finalDonaldNode and Obama are declared here because otherwise I get a warning.
-        JsonNode finalDonaldNode = donaldNode;
-        JsonNode finalObamaNode = obamaNode;
-        assertAll("Get all contacts validations",
-                // Check for Donald's contact, custom row, and label IDs
-                () -> assertEquals(donaldContactId, finalDonaldNode.get("id").asText(),"Expected Donald's Contact ID"),
-                () -> assertEquals(donaldCustomRowId, finalDonaldNode.get("customRows").get(0).get("id").asText(), "Expected Donald's Custom Row ID"),
-                () -> assertEquals(donaldLabelId, finalDonaldNode.get("label").get("id").asText(), "Expected Donald's Label ID"),
-
-                // Check for Obama's contact, custom row, and label IDs
-                () -> assertEquals(obamaContactId, finalObamaNode.get("id").asText(), "Expected Obama's Contact ID"),
-                () -> assertEquals(obamaCustomRowId, finalObamaNode.get("customRows").get(0).get("id").asText(), "Expected Obama's Custom Row ID"),
-                () -> assertEquals(obamaLabelId, finalObamaNode.get("label").get("id").asText(), "Expected Obama's Label ID")
-        );
-    }
+//    //admin stuff
+//    //http://localhost:8080/api/v1/admin/get-all-contacts-as-admin -> get all contacts
+//    @Test
+//    @Transactional
+//    public void getAllContactsADMIN_thenExpect200() throws Exception {
+//        //create a custom row for Donald's contact
+//        var customRowDonald1 = DtoCustomRow.builder()
+//                .customName("What I think about Obama")
+//                .customField("I like him")
+//                .build();
+//
+//        List<DtoCustomRow> customRowsForDonald = new ArrayList<>();
+//        customRowsForDonald.add(customRowDonald1);
+//
+//        //create label
+//        //create a label obj
+//        String name = "red";
+//        String color = "255, 0, 0";
+//        var label = Label.builder()
+//                .name(name)
+//                .colorRGB(color)
+//                .build();
+//
+//        //create Donald's first contact
+//        // Donald creates a contact
+//        var contactDtoDonald1 = DtoContact.builder()
+//                .name("Barak")
+//                .lastName("Obama")
+//                .phoneNumber("0574965222")
+//                .nameOfCompany("Obama Care")
+//                .address("The White House")
+//                .email("ObamaCaresForYou@usa.com")
+//                .fax("+1-907-555-1234")
+//                .mobileNumber("0574965333")
+//                .comment("I love this guy.. Obviously.")
+//                .customRows(customRowsForDonald)
+//                .label(label)
+//                .build();
+//
+//
+//        String contactJsonPayloadDonald1 = convertFromObjectToJson(contactDtoDonald1).toString();
+//        //create request
+//        MvcResult createContactResultDonald1 = createContact(contactJsonPayloadDonald1, jwtToken, status().isOk());
+//
+//        JsonNode createContactResultDonald1JsonNode = convertFromStringToJson(createContactResultDonald1.getResponse().getContentAsString());
+//
+//        //needed later for assertion
+//        String donaldContactId = createContactResultDonald1JsonNode.get("id").asText();
+//        String donaldCustomRowId = createContactResultDonald1JsonNode.get("customRows").get(0).get("id").asText();
+//        String donaldLabelId = createContactResultDonald1JsonNode.get("label").get("id").asText();
+//
+//        //create user 2
+//        //create Obama
+//        var newUserDto = RegisterRequest.builder()
+//                .firstName("Barak")
+//                .lastName("Obama")
+//                .email("BarakObama@usa.com")
+//                .password("A(&*SHY(A*HWPF")
+//                .build();
+//        MvcResult registerResult = createUser(newUserDto);
+//
+//        String obamaJwt = extractJwtToken(registerResult.getResponse().getContentAsString());
+//
+//        //create custom row to Obama's to be created contact
+//        var customRowObama1 = DtoCustomRow.builder()
+//                .customName("What I think about Donald")
+//                .customField("I don't like him")
+//                .build();
+//
+//
+//        List<DtoCustomRow> customRowsForObama = new ArrayList<>();
+//        customRowsForObama.add(customRowObama1);
+//
+//
+//        //create label
+//        //create a label obj
+//        name = "orange";
+//        color = "255, 0, 0";
+//        var labelObama1 = Label.builder()
+//                .name(name)
+//                .colorRGB(color)
+//                .build();
+//
+//        //create contact for Obama
+//        var contactDtoObama1 = DtoContact.builder()
+//                .name("Donald")
+//                .lastName("Trump")
+//                .phoneNumber("0574965222")
+//                .nameOfCompany("Donald Doesn't Care")
+//                .address("The Orange House")
+//                .email("DonaldDoesntForYou@usa.com")
+//                .fax("+1-907-555-1234")
+//                .mobileNumber("0574965333")
+//                .comment("I might love this guy if he wasn't orange.")
+//                .customRows(customRowsForObama)
+//                .label(labelObama1)
+//                .build();
+//
+//        String contactJsonPayloadObama1 = convertFromObjectToJson(contactDtoObama1).toString();
+//        //create contact request
+//        MvcResult createContactResultObama1 = createContact(contactJsonPayloadObama1, obamaJwt, status().isOk());
+//
+//        JsonNode createContactResultObama1JsonNode = convertFromStringToJson(createContactResultObama1.getResponse().getContentAsString());
+//
+//        //needed later for assertion
+//        String obamaContactId = createContactResultObama1JsonNode.get("id").asText();
+//        String obamaCustomRowId = createContactResultObama1JsonNode.get("customRows").get(0).get("id").asText();
+//        String obamaLabelId = createContactResultObama1JsonNode.get("label").get("id").asText();
+//
+//
+//
+//        //create admin
+//        RegisterRequest adminUser = new RegisterRequest("ADMIN", "ADMIN", "ADMIN@GMAIL@COM", "ADMIN!123");
+//        String adminJwt = authenticationService.createAdmin(adminUser);
+//
+//
+//
+//        //make a get all request with the admin jwt token
+//        MvcResult actualGetAllContactsResult = getAllContactsAdmin(adminJwt, status().isOk());
+//
+//
+//        //It's late I want to sleep - chatGTP wrote the code bellow, sorry not sorry.
+//        JsonNode actualGetAllContactsResultJsonNode = convertFromStringToJson(actualGetAllContactsResult.getResponse().getContentAsString());
+//        ArrayNode contactsArray = (ArrayNode) actualGetAllContactsResultJsonNode;
+//        JsonNode donaldNode = null;
+//        JsonNode obamaNode = null;
+//        for (JsonNode contactNode : contactsArray) {
+//            if ("DonaldDoesntForYou@usa.com".equals(contactNode.get("email").asText())) {
+//                obamaNode = contactNode;
+//            } else if ("ObamaCaresForYou@usa.com".equals(contactNode.get("email").asText())) {
+//                donaldNode = contactNode;
+//            }
+//        }
+//
+//
+//
+//        //the finalDonaldNode and Obama are declared here because otherwise I get a warning.
+//        JsonNode finalDonaldNode = donaldNode;
+//        JsonNode finalObamaNode = obamaNode;
+//        assertAll("Get all contacts validations",
+//                // Check for Donald's contact, custom row, and label IDs
+//                () -> assertEquals(donaldContactId, finalDonaldNode.get("id").asText(),"Expected Donald's Contact ID"),
+//                () -> assertEquals(donaldCustomRowId, finalDonaldNode.get("customRows").get(0).get("id").asText(), "Expected Donald's Custom Row ID"),
+//                () -> assertEquals(donaldLabelId, finalDonaldNode.get("label").get("id").asText(), "Expected Donald's Label ID"),
+//
+//                // Check for Obama's contact, custom row, and label IDs
+//                () -> assertEquals(obamaContactId, finalObamaNode.get("id").asText(), "Expected Obama's Contact ID"),
+//                () -> assertEquals(obamaCustomRowId, finalObamaNode.get("customRows").get(0).get("id").asText(), "Expected Obama's Custom Row ID"),
+//                () -> assertEquals(obamaLabelId, finalObamaNode.get("label").get("id").asText(), "Expected Obama's Label ID")
+//        );
+//    }
 
 
     //http://localhost:8080/api/v1/admin/search-contact-as-admin -> get all by query

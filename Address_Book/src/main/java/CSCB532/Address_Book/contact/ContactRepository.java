@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ContactRepository extends JpaRepository<Contact, Integer>{
+public interface ContactRepository extends JpaRepository<Contact, Integer> {
     @Transactional
     Optional<Contact> findById(Integer contactId);
 
@@ -37,7 +37,7 @@ public interface ContactRepository extends JpaRepository<Contact, Integer>{
             @Param("lastName") String lastName
     );
 
-//    @Query("SELECT c FROM Contact c " +
+    //    @Query("SELECT c FROM Contact c " +
 //            "WHERE c.label.id = :labelId ")
     @Query("SELECT c FROM Contact c JOIN c.labels l WHERE l.id = :labelId")
     List<Contact> findAllWithLabelId(

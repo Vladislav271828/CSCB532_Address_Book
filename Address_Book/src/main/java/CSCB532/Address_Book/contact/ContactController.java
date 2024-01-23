@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/contact")
 public class ContactController {
@@ -69,7 +70,6 @@ public class ContactController {
         return ResponseEntity.noContent().build();
 
     }
-
 
 
 //    @GetMapping("/get-contacts-with-most-common-label-as-user")
