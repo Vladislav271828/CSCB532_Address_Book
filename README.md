@@ -1,4 +1,4 @@
-CSCB532_Traykov_Address_Book
+CSCB532_Address_Book
 # MyYellowBook
 
 A single-page "address book" web app made with React and Spring, allowing users to store, organize, search, edit and delete their contacts with a simple and intuitive user interface.
