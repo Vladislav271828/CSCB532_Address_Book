@@ -77,6 +77,7 @@ public class UserService {
         User currentUser = authenticationService.getCurrentlyLoggedUser();
 
         if (userRepository.existsByEmail(currentUser.getEmail())) {
+            userRepository.deleteVerificationsByUserId(currentUser.getId());
             userRepository.delete(userRepository.findByEmail(currentUser.getEmail()).orElseThrow(
                     () -> new DatabaseException("Problem finding user")
             ));
