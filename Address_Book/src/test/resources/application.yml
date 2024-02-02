@@ -16,7 +16,7 @@ spring:
 
   mail:
     sendgrid:
-      api-key: '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' # Be cautious with sensitive data
+      api-key: ${SENDGRID_API_KEY} # Be cautious with sensitive data
 
   h2:
     console:

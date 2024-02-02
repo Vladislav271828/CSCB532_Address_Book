@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/adress_book #change "company" with you own database
+    url: jdbc:mysql://localhost:3306/address_book #change "address_book" with you own database
     username: root #if you haven't configured username and password for your database leave empty
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver

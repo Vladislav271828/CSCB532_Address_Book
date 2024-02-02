@@ -19,7 +19,15 @@ A single-page "address book" web app made with React and Spring, allowing users 
 
 ## Run the project locally
 
-*Prerequisites: You must have jdk-17 and npm installed and set up on your system.*
+*Prerequisites: You must have jdk-17, npm and MySQL server installed and set up on your system.*
+
+Firstly, make sure your SendGrid API-key (used to send the verification emails) is stored in your env variables, you can do this by running this command as administrator and then resetting your device:
+```
+setx SENDGRID_API_KEY "your_sendgrid_api_key_here"
+```
+
+Then make sure your MySQL server username and password is configured correctly in the `application.yml` file located in `/Address_Book/src/main/resources`.
+
 
 To run the **back-end** server, open a terminal in the `/Address_Book` directory and execute the command:
 ```
