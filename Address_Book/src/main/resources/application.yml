@@ -2,11 +2,11 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/adress_book #change "company" with you own database
     username: root #if you haven't configured username and password for your database leave empty
-    password: root
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
   mail:
     sendgrid:
-      api-key: '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' #for production this should be stored in env variables
+      api-key: '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' #for production this should be stored in env variables
 
 
   jpa:
