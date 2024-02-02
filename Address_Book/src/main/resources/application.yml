@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   mail:
     sendgrid:
-      api-key: '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' #for production this should be stored in env variables
+      api-key: ${SENDGRID_API_KEY} #for production this should be stored in env variables
 
 
   jpa:
